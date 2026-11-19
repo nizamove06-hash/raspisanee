@@ -37,15 +37,16 @@ const STEPPERS = [
 ];
 
 const THEMES = [
-  { id: 'mono',    name: 'Моно',            bg: '#0b0b0d', c: ['#ffffff', '#8e8e96'] },
-  { id: 'neon',    name: 'Неон',            bg: '#07040f', c: ['#ff2bd6', '#19f0ff'] },
-  { id: 'redblue', name: 'Красно-синяя',    bg: '#080a14', c: ['#ff3b4a', '#3b82ff'] },
-  { id: 'ghoul',   name: 'Токийский гуль',  bg: '#050203', c: ['#ff1f1f', '#2a0000'] },
-  { id: 'chrome',  name: 'Хром',            bg: '#0e1013', c: ['#d7e0ea', '#7f8c9a'] },
-  { id: 'cyber',   name: 'Киберпанк',       bg: '#0a0a05', c: ['#fcee0a', '#00f0ff'] },
-  { id: 'forest',  name: 'Лес',             bg: '#06100a', c: ['#5be37d', '#c8e66a'] },
-  { id: 'sunset',  name: 'Закат',           bg: '#1a0b1f', c: ['#ff8a4c', '#ff4d8d'] },
-  { id: 'space',   name: 'Космос',          bg: '#04030d', c: ['#8f8bff', '#5ee0ff'] }
+  { id: 'mono',     name: 'Моно',            bg: '#0b0b0d', c: ['#ffffff', '#8e8e96'] },
+  { id: 'neon',     name: 'Неон',            bg: '#07040f', c: ['#ff2bd6', '#19f0ff'] },
+  { id: 'redblue',  name: 'Красно-синяя',    bg: '#080a14', c: ['#ff3b4a', '#3b82ff'] },
+  { id: 'ghoul',    name: 'Токийский гуль',  bg: '#050203', c: ['#ff1f1f', '#2a0000'] },
+  { id: 'takizawa', name: 'Такидзава',       bg: '#07040c', c: ['#b388ff', '#ff4d6d'] },
+  { id: 'chrome',   name: 'Хром',            bg: '#0e1013', c: ['#d7e0ea', '#7f8c9a'] },
+  { id: 'cyber',    name: 'Киберпанк',       bg: '#0a0a05', c: ['#fcee0a', '#00f0ff'] },
+  { id: 'forest',   name: 'Лес',             bg: '#06100a', c: ['#5be37d', '#c8e66a'] },
+  { id: 'sunset',   name: 'Закат',           bg: '#1a0b1f', c: ['#ff8a4c', '#ff4d8d'] },
+  { id: 'space',    name: 'Космос',          bg: '#04030d', c: ['#8f8bff', '#5ee0ff'] }
 ];
 
 const TABS = ['schedule', 'settings'];

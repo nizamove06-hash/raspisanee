@@ -39,6 +39,12 @@ html[data-theme="ghoul"]{
   --accent:#ff1f1f;--on-accent:#ffffff;--accent2:#b01212;
   --blob1:rgba(170,0,0,.28);--blob2:rgba(100,0,0,.3);--blob3:rgba(255,0,0,.1);
 }
+html[data-theme="takizawa"]{
+  --bg:#07040c;--text:#f6f0fc;--muted:#b9a9cf;
+  --card:rgba(16,7,28,.55);--card-solid:#150a22;--line:rgba(179,136,255,.38);
+  --accent:#b388ff;--on-accent:#12061f;--accent2:#ff4d6d;
+  --blob1:rgba(140,80,230,.3);--blob2:rgba(255,77,109,.2);--blob3:rgba(100,50,180,.25);
+}
 html[data-theme="chrome"]{
   --bg:#0e1013;--text:#f2f5f8;--muted:#9aa4ae;
   --card:rgba(255,255,255,.08);--card-solid:#1a1d22;--line:rgba(255,255,255,.18);
@@ -162,6 +168,21 @@ html[data-theme="space"] .bg__c{
   animation:twinkle 4s ease-in-out infinite alternate;
 }
 @keyframes twinkle{from{opacity:.35}to{opacity:1}}
+
+/* ============ ТАКИДЗАВА: твоё фото на фоне ============ */
+/* Файл takizawa.webp должен лежать рядом с index.html и style.css */
+html[data-theme="takizawa"] .bg__c{
+  opacity:1;inset:0;
+  background:
+    linear-gradient(to bottom,rgba(6,2,12,.25) 0,rgba(6,2,12,.55) 55%,rgba(6,2,12,.88) 100%),
+    url("./takizawa.webp") center top/cover no-repeat;
+  animation:photoZoom 24s ease-in-out infinite alternate;
+}
+@keyframes photoZoom{from{transform:scale(1)}to{transform:scale(1.07)}}
+
+html[data-theme="takizawa"] .head h1{text-shadow:0 0 22px rgba(179,136,255,.65)}
+html[data-theme="takizawa"] .status__count{text-shadow:0 0 26px rgba(179,136,255,.5)}
+html[data-theme="takizawa"] .chip.is-active{box-shadow:0 0 16px rgba(179,136,255,.55)}
 
 /* ============ ТОКИЙСКИЙ ГУЛЬ: глаз, искры, виньетка ============ */
 .bg__eye,.bg__embers,.bg__vig{display:none}
