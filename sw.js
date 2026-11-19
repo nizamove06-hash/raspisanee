@@ -1,58 +1,39 @@
-// Если изменишь файлы и на телефоне не обновилось, поменяй номер версии: v3 → v4
-const CACHE = 'raspisanie-v3';
+const CACHE = 'raspisanie-v5';
+const FILES = ['./', './index.html', './style.css', './script.js', './manifest.json', './icon.svg'];
 
-const FILES = [
-  './',
-  './index.html',
-  './style.css',
-  './script.js',
-  './manifest.json',
-  './icon.svg'
-];
-
-self.addEventListener('install', function (event) {
+// Установка: кладём свежие файлы в кэш (в обход кэша браузера)
+self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
-      .then(function (cache) {
-        // cache: 'reload' = брать файлы строго с сервера, а не из кэша браузера
-        return Promise.allSettled(FILES.map(function (f) {
-          return cache.add(new Request(f, { cache: 'reload' }));
-        }));
-      })
-      .then(function () { return self.skipWaiting(); })
+      .then(cache => Promise.all(FILES.map(f => cache.add(new Request(f, { cache: 'reload' })))))
+      .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', function (event) {
+// Активация: удаляем старые кэши
+self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(function (keys) {
-        return Promise.all(keys.filter(function (k) { return k !== CACHE; })
-                               .map(function (k) { return caches.delete(k); }));
-      })
-      .then(function () { return self.clients.claim(); })
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Сначала спрашиваем сервер (cache: 'no-cache' = всегда проверять, есть ли новая версия).
-// Нет интернета: берём копию из кэша.
-self.addEventListener('fetch', function (event) {
+// Запросы: сначала сеть (свежие файлы), если нет интернета — берём из кэша
+self.addEventListener('fetch', event => {
   const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  if (req.method !== 'GET') return;
+  if (new URL(req.url).origin !== location.origin) return;
 
   event.respondWith(
     fetch(req, { cache: 'no-cache' })
-      .then(function (res) {
+      .then(res => {
         if (res && res.ok) {
           const copy = res.clone();
-          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+          caches.open(CACHE).then(c => c.put(req, copy));
         }
         return res;
       })
-      .catch(function () {
-        return caches.match(req).then(function (r) {
-          return r || caches.match('./index.html');
-        });
-      })
+      .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
   );
 });

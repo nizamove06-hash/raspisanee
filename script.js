@@ -1,427 +1,516 @@
 'use strict';
 
-/* =========================================================
-   1. НАСТРОЙКИ — МЕНЯЙ ЧИСЛА ЗДЕСЬ
-   ========================================================= */
-
-// Варианты времени начала первого урока (порядок кнопок = порядок в списке)
-const START_TIMES = ['12:10', '12:20', '13:50', '13:10', '14:00', '14:50', '15:00', '11:30'];
-
-const LESSONS_COUNT   = 6;   // сколько уроков в день
+/* ================================================================
+   НАСТРОЙКИ ПО УМОЛЧАНИЮ (их можно менять и прямо в приложении)
+   ================================================================ */
+const START_TIMES     = ['12:10', '12:20', '13:50', '13:10', '14:00', '14:50', '15:00', '11:30'];
+const LESSONS_COUNT   = 6;   // сколько уроков
 const LESSON_MIN      = 40;  // длина урока, минут
 const BREAK_MIN       = 10;  // обычная перемена, минут
 const BIG_BREAK_MIN   = 15;  // большая перемена, минут
-const BIG_BREAK_AFTER = 3;   // после какого урока большая перемена
+const BIG_BREAK_AFTER = 3;   // большая перемена после этого урока (0 = нет)
+const LESSON_NAMES    = [];  // например ['Математика', 'Русский', ...]
+const SWIPE_MIN_PX    = 60;  // насколько надо провести пальцем для свайпа
 
-// Названия предметов (необязательно). Пример: ['Математика', 'Русский', 'Физика', ...]
-// Если оставить пустым, будут подписи «1 урок», «2 урок» и т.д.
-const LESSON_NAMES = [];
-
-const DEFAULT_TIME  = '12:10'; // что выбрано при первом запуске
-const DEFAULT_THEME = 'mono';  // mono | neon | redblue | ghoul | chrome
-
-// Порог «слабого устройства» для автоматического лёгкого режима
-const LOW_CORES     = 4;   // ядер процессора столько или меньше → слабое
-const LOW_MEMORY_GB = 2;   // памяти столько или меньше → слабое (знает только Chrome)
-const MIN_FPS       = 40;  // если реальная частота кадров ниже → включаем лёгкий режим
-
-// Ключи для сохранения в браузере
-const KEY_TIME  = 'raspisanie.time';
-const KEY_THEME = 'raspisanie.theme';
-const KEY_FX    = 'raspisanie.fx';
-
-// Темы: цвет для адресной строки телефона
-const THEMES = {
-  mono:    { color: '#0d0d0f' },
-  neon:    { color: '#0d0120' },
-  redblue: { color: '#11121f' },
-  ghoul:   { color: '#040203' },
-  chrome:  { color: '#aab2bd' }
+const KEYS = {
+  time:   'raspisanie.time',
+  theme:  'raspisanie.theme',
+  fx:     'raspisanie.fx',
+  cfg:    'raspisanie.cfg',
+  custom: 'raspisanie.custom'
 };
 
-/* =========================================================
-   2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-   ========================================================= */
+const DEFAULT_CFG = {
+  lessons: LESSONS_COUNT,
+  lessonMin: LESSON_MIN,
+  breakMin: BREAK_MIN,
+  bigBreakMin: BIG_BREAK_MIN,
+  bigBreakAfter: BIG_BREAK_AFTER
+};
 
-// Ищет элемент по id. Если не нашёл, пишет понятную ошибку в консоль
-function $(id) {
-  const el = document.getElementById(id);
-  if (!el) throw new Error('В index.html нет элемента с id="' + id + '"');
-  return el;
+const STEPPERS = [
+  { key: 'lessons',       label: 'Количество уроков',    min: 1,  max: 10,  step: 1, unit: '' },
+  { key: 'lessonMin',     label: 'Длина урока',          min: 10, max: 120, step: 5, unit: ' мин' },
+  { key: 'breakMin',      label: 'Перемена',             min: 0,  max: 30,  step: 1, unit: ' мин' },
+  { key: 'bigBreakMin',   label: 'Большая перемена',     min: 0,  max: 60,  step: 1, unit: ' мин' },
+  { key: 'bigBreakAfter', label: 'Большая после урока',  min: 0,  max: 9,   step: 1, unit: '', zeroText: 'нет' }
+];
+
+const THEMES = [
+  { id: 'mono',    name: 'Моно',            bg: '#0b0b0d', c: ['#ffffff', '#8e8e96'] },
+  { id: 'neon',    name: 'Неон',            bg: '#07040f', c: ['#ff2bd6', '#19f0ff'] },
+  { id: 'redblue', name: 'Красно-синяя',    bg: '#080a14', c: ['#ff3b4a', '#3b82ff'] },
+  { id: 'ghoul',   name: 'Токийский гуль',  bg: '#050203', c: ['#ff1f1f', '#2a0000'] },
+  { id: 'chrome',  name: 'Хром',            bg: '#0e1013', c: ['#d7e0ea', '#7f8c9a'] },
+  { id: 'cyber',   name: 'Киберпанк',       bg: '#0a0a05', c: ['#fcee0a', '#00f0ff'] },
+  { id: 'forest',  name: 'Лес',             bg: '#06100a', c: ['#5be37d', '#c8e66a'] },
+  { id: 'sunset',  name: 'Закат',           bg: '#1a0b1f', c: ['#ff8a4c', '#ff4d8d'] },
+  { id: 'space',   name: 'Космос',          bg: '#04030d', c: ['#8f8bff', '#5ee0ff'] }
+];
+
+const TABS = ['schedule', 'settings'];
+
+/* ================================================================
+   ВСПОМОГАТЕЛЬНОЕ
+   ================================================================ */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, '0');
+
+function loadRaw(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function saveRaw(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+function loadJSON(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : JSON.parse(v);
+  } catch (e) { return fallback; }
 }
+function saveJSON(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
 
-const pad = (n) => String(n).padStart(2, '0');
-
-// "12:10" → 730 (минут от полуночи)
-function toMinutes(str) {
-  const parts = str.split(':');
-  return Number(parts[0]) * 60 + Number(parts[1]);
+function parseHM(s) {
+  const p = s.split(':').map(Number);
+  return p[0] * 3600 + p[1] * 60;
 }
-
-// 730 → "12:10"
-function fmtTime(min) {
-  return pad(Math.floor(min / 60) % 24) + ':' + pad(min % 60);
+function fmtHM(sec) {
+  sec = ((Math.round(sec) % 86400) + 86400) % 86400;
+  return pad(Math.floor(sec / 3600)) + ':' + pad(Math.floor((sec % 3600) / 60));
 }
-
-// 125 секунд → "02:05"; больше часа → "1:02:05"
-function fmtCountdown(sec) {
+function fmtCount(sec) {
+  sec = Math.max(0, Math.ceil(sec));
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;
   return h > 0 ? h + ':' + pad(m) + ':' + pad(s) : pad(m) + ':' + pad(s);
 }
-
-function makeEl(tag, className, text) {
-  const el = document.createElement(tag);
-  if (className) el.className = className;
-  if (text !== undefined) el.textContent = text;
-  return el;
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+function setText(el, text) { if (el.textContent !== text) el.textContent = text; }
 
-// Безопасная работа с localStorage (в приватном режиме он может быть недоступен)
-function load(key) {
-  try { return localStorage.getItem(key); } catch (e) { return null; }
-}
-function save(key, value) {
-  try { localStorage.setItem(key, value); } catch (e) { /* ничего страшного */ }
-}
-
-/* =========================================================
-   3. ЭЛЕМЕНТЫ СТРАНИЦЫ (id должны совпадать с index.html)
-   ========================================================= */
-const root         = document.documentElement;
-const metaTheme    = $('metaTheme');
-const timeButtons  = $('timeButtons');
-const statusCard   = $('statusCard');
-const statusLabel  = $('statusLabel');
-const clockEl      = $('clock');
-const countdownEl  = $('countdown');
-const captionEl    = $('caption');
-const progressEl   = $('progress');
-const progressFill = $('progressFill');
-const nextText     = $('nextText');
-const scheduleList = $('scheduleList');
-const themesBox    = $('themes');
-const fxToggle     = $('fxToggle');
-const tabbar       = $('tabbar');
-
-// Две вкладки: ключ = значение data-tab у кнопки в нижней панели
-const views = {
-  schedule: $('view-schedule'),
-  settings: $('view-settings')
+/* ================================================================
+   СОСТОЯНИЕ
+   ================================================================ */
+const state = {
+  time: START_TIMES[0],
+  theme: 'mono',
+  tab: 'schedule',
+  custom: [],
+  cfg: Object.assign({}, DEFAULT_CFG)
 };
+let schedule = [];
+let lastKey = '';
 
-/* =========================================================
-   4. РАСПИСАНИЕ
-   ========================================================= */
-let segments = [];       // список уроков и перемен с началом и концом
-let currentTime = '';    // выбранное время старта
-let lastIdx = -99;       // какой пункт сейчас подсвечен
-
-function buildSchedule(startStr) {
-  const result = [];
-  let t = toMinutes(startStr);
-
-  for (let i = 1; i <= LESSONS_COUNT; i++) {
-    const name = LESSON_NAMES[i - 1];
-    result.push({
-      type: 'lesson',
-      num: i,
-      title: name ? i + '. ' + name : i + ' урок',
-      start: t,
-      end: t + LESSON_MIN
+function sanitizeCfg(raw) {
+  const out = Object.assign({}, DEFAULT_CFG);
+  if (raw && typeof raw === 'object') {
+    STEPPERS.forEach(s => {
+      const v = Number(raw[s.key]);
+      if (Number.isFinite(v)) out[s.key] = Math.min(s.max, Math.max(s.min, Math.round(v)));
     });
-    t += LESSON_MIN;
+  }
+  return out;
+}
 
-    if (i < LESSONS_COUNT) {
-      const big = (i === BIG_BREAK_AFTER);
-      const len = big ? BIG_BREAK_MIN : BREAK_MIN;
-      result.push({
-        type: 'break',
-        big: big,
-        title: big ? 'Большая перемена' : 'Перемена',
-        start: t,
-        end: t + len
-      });
-      t += len;
+function allTimes() {
+  return START_TIMES.concat(state.custom.filter(t => !START_TIMES.includes(t)));
+}
+
+/* ================================================================
+   РАСПИСАНИЕ
+   ================================================================ */
+function lessonName(n) { return LESSON_NAMES[n - 1] || (n + ' урок'); }
+function segName(seg) {
+  if (seg.type === 'lesson') return lessonName(seg.n);
+  return seg.big ? 'Большая перемена' : 'Перемена';
+}
+
+function buildSchedule() {
+  const c = state.cfg;
+  const out = [];
+  let t = parseHM(state.time);
+  for (let i = 1; i <= c.lessons; i++) {
+    out.push({ type: 'lesson', n: i, start: t, end: t + c.lessonMin * 60 });
+    t += c.lessonMin * 60;
+    if (i < c.lessons) {
+      const big = c.bigBreakAfter === i;
+      const len = big ? c.bigBreakMin : c.breakMin;
+      if (len > 0) {
+        out.push({ type: 'break', n: i, big: big, start: t, end: t + len * 60 });
+        t += len * 60;
+      }
     }
   }
-  return result;
+  return out;
 }
 
 function renderSchedule() {
-  scheduleList.textContent = '';
-  const frag = document.createDocumentFragment();
-
-  segments.forEach(function (s, i) {
-    const li = makeEl('li', 'item ' + (s.type === 'lesson' ? 'item--lesson' : 'item--break'));
-    li.dataset.index = String(i);
-
-    const time  = makeEl('span', 'item__time', fmtTime(s.start) + '–' + fmtTime(s.end));
-    const title = makeEl('span', 'item__title', s.title);
-    title.appendChild(makeEl('em', 'item__badge', 'сейчас'));
-    const dur   = makeEl('span', 'item__dur', (s.end - s.start) + ' мин');
-
-    li.append(time, title, dur);
-    frag.appendChild(li);
-  });
-
-  scheduleList.appendChild(frag);
+  $('scheduleList').innerHTML = schedule.map((s, i) => {
+    const dur = Math.round((s.end - s.start) / 60) + ' мин';
+    return '<li class="row row--' + s.type + '" data-i="' + i + '">' +
+      '<span class="row__time">' + fmtHM(s.start) + '–' + fmtHM(s.end) + '</span>' +
+      '<span class="row__name">' + esc(segName(s)) + '</span>' +
+      '<span class="row__dur">' + dur + '</span></li>';
+  }).join('');
 }
 
-// Подсветка: текущий пункт и «прошедшие»
-function highlight(idx) {
-  if (idx === lastIdx) return;
-  lastIdx = idx;
-  const items = scheduleList.children;
-  for (let i = 0; i < items.length; i++) {
-    items[i].classList.toggle('is-current', i === idx);
-    items[i].classList.toggle('is-past', i < idx);
-  }
-}
-
-/* =========================================================
-   5. ТАЙМЕР (обновляется раз в секунду, меняет только текст)
-   ========================================================= */
-function tick() {
-  if (!segments.length) return;
-
-  const now = new Date();
-  const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  clockEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-
-  const first = segments[0];
-  const last  = segments[segments.length - 1];
-  const startSec = first.start * 60;
-  const endSec   = last.end * 60;
-
-  let idx, state, label, caption, left, progress, next;
-
-  if (sec < startSec) {
-    idx = -1;
-    state = 'before';
-    label = 'Уроки ещё не начались';
-    caption = 'до начала первого урока';
-    left = startSec - sec;
-    progress = 0;
-    next = 'Дальше: ' + first.title + ' в ' + fmtTime(first.start);
-
-  } else if (sec >= endSec) {
-    idx = segments.length;
-    state = 'after';
-    label = 'Уроки закончились';
-    caption = 'можно отдыхать';
-    left = 0;
-    progress = 1;
-    next = 'Дальше: завтра в ' + fmtTime(first.start);
-
-  } else {
-    idx = segments.findIndex(function (s) {
-      return sec >= s.start * 60 && sec < s.end * 60;
-    });
-    const cur = segments[idx];
-    const curStart = cur.start * 60;
-    const curEnd = cur.end * 60;
-    const following = segments[idx + 1];
-
-    state = cur.type;
-    label = cur.type === 'lesson' ? 'Идёт ' + cur.title : cur.title;
-    caption = cur.type === 'lesson' ? 'до конца урока' : 'до конца перемены';
-    left = curEnd - sec;
-    progress = (sec - curStart) / (curEnd - curStart);
-    next = following
-      ? 'Дальше: ' + following.title + ' в ' + fmtTime(following.start)
-      : 'Дальше: конец уроков в ' + fmtTime(cur.end);
-  }
-
-  highlight(idx);
-
-  statusCard.dataset.state = state;
-  statusLabel.textContent = label;
-  captionEl.textContent = caption;
-  countdownEl.textContent = fmtCountdown(left);
-  nextText.textContent = next;
-
-  const percent = Math.round(progress * 1000) / 10;
-  progressFill.style.width = percent + '%';
-  progressEl.setAttribute('aria-valuenow', String(Math.round(percent)));
-}
-
-let timerId = null;
-function loop() {
-  tick();
-  // Следующий тик точно на границе секунды, чтобы цифры не «прыгали»
-  timerId = setTimeout(loop, 1000 - (Date.now() % 1000) + 5);
-}
-function startTimer() { stopTimer(); loop(); }
-function stopTimer()  { clearTimeout(timerId); timerId = null; }
-
-// Вкладка браузера скрыта: останавливаем таймер и анимации, экономим батарею
-document.addEventListener('visibilitychange', function () {
-  if (document.hidden) {
-    stopTimer();
-    root.classList.add('paused');
-  } else {
-    root.classList.remove('paused');
-    startTimer();
-  }
-});
-
-/* =========================================================
-   6. КНОПКИ ВРЕМЕНИ
-   ========================================================= */
-function createTimeButtons() {
-  const frag = document.createDocumentFragment();
-  START_TIMES.forEach(function (t) {
-    const b = makeEl('button', 'time-btn', t);
-    b.type = 'button';
-    b.dataset.time = t;
-    b.setAttribute('aria-pressed', 'false');
-    frag.appendChild(b);
-  });
-  timeButtons.appendChild(frag);
-
-  timeButtons.addEventListener('click', function (e) {
-    const btn = e.target.closest('.time-btn');
-    if (btn) setStartTime(btn.dataset.time, true);
-  });
-}
-
-function setStartTime(str, store) {
-  if (START_TIMES.indexOf(str) === -1) str = START_TIMES[0];
-  currentTime = str;
-  segments = buildSchedule(str);
-  lastIdx = -99;
+function rebuild() {
+  schedule = buildSchedule();
   renderSchedule();
-
-  const btns = timeButtons.children;
-  for (let i = 0; i < btns.length; i++) {
-    btns[i].setAttribute('aria-pressed', String(btns[i].dataset.time === str));
-  }
-
-  if (store) save(KEY_TIME, str);
+  lastKey = '';
   tick();
 }
 
-/* =========================================================
-   7. ВКЛАДКИ (Расписание / Настройки)
-   ========================================================= */
-function setTab(name) {
-  if (!views[name]) name = 'schedule';
+function tick() {
+  if (!schedule.length) return;
+  const d = new Date();
+  const now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
+  setText($('clock'), pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()));
 
-  Object.keys(views).forEach(function (key) {
-    views[key].hidden = (key !== name);
-  });
+  const first = schedule[0];
+  const last = schedule[schedule.length - 1];
+  let mode, idx = -1;
 
-  const btns = tabbar.querySelectorAll('.tab-btn');
-  for (let i = 0; i < btns.length; i++) {
-    btns[i].setAttribute('aria-selected', String(btns[i].dataset.tab === name));
+  if (now < first.start) {
+    mode = 'wait';
+  } else if (now >= last.end) {
+    mode = 'done';
+  } else {
+    idx = schedule.findIndex(s => now >= s.start && now < s.end);
+    mode = idx >= 0 ? schedule[idx].type : 'wait';
   }
 
-  window.scrollTo(0, 0);
-}
+  let label, count, caption, next, progress = 0;
 
-tabbar.addEventListener('click', function (e) {
-  const btn = e.target.closest('.tab-btn');
-  if (btn) setTab(btn.dataset.tab);
-});
-
-/* =========================================================
-   8. ТЕМЫ (кнопки лежат на вкладке «Настройки»)
-   ========================================================= */
-function setTheme(name, store) {
-  if (!THEMES[name]) name = DEFAULT_THEME;
-  root.setAttribute('data-theme', name);
-  metaTheme.setAttribute('content', THEMES[name].color);
-
-  const btns = themesBox.querySelectorAll('.theme-btn');
-  for (let i = 0; i < btns.length; i++) {
-    const active = btns[i].dataset.theme === name;
-    btns[i].classList.toggle('is-active', active);
-    btns[i].setAttribute('aria-pressed', String(active));
+  if (mode === 'wait') {
+    label = 'Скоро уроки';
+    count = fmtCount(first.start - now);
+    caption = 'до начала ' + lessonName(1);
+    next = 'Дальше: ' + lessonName(1) + ' в ' + fmtHM(first.start);
+  } else if (mode === 'done') {
+    label = 'Уроки закончились';
+    count = '00:00';
+    caption = 'Можно отдыхать 🎉';
+    next = 'Завтра начало в ' + fmtHM(first.start);
+    progress = 1;
+  } else {
+    const seg = schedule[idx];
+    const nxt = schedule[idx + 1];
+    label = segName(seg);
+    count = fmtCount(seg.end - now);
+    caption = seg.type === 'lesson' ? 'до конца урока' : 'до конца перемены';
+    next = nxt
+      ? 'Дальше: ' + segName(nxt) + ' в ' + fmtHM(nxt.start)
+      : 'Дальше: конец уроков в ' + fmtHM(seg.end);
+    progress = (now - seg.start) / (seg.end - seg.start);
   }
-  if (store) save(KEY_THEME, name);
-}
 
-themesBox.addEventListener('click', function (e) {
-  const btn = e.target.closest('.theme-btn');
-  if (btn) setTheme(btn.dataset.theme, true);
-});
+  $('statusCard').dataset.state = mode;
+  setText($('statusLabel'), label);
+  setText($('countdown'), count);
+  setText($('caption'), caption);
+  setText($('nextText'), next);
+  $('progressFill').style.transform = 'scaleX(' + Math.min(1, Math.max(0, progress)).toFixed(4) + ')';
 
-/* =========================================================
-   9. ЭФФЕКТЫ И ЛЁГКИЙ РЕЖИМ ДЛЯ СЛАБЫХ УСТРОЙСТВ
-   ========================================================= */
-function isWeakDevice() {
-  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const saveData = navigator.connection && navigator.connection.saveData;
-  const lowMem = navigator.deviceMemory && navigator.deviceMemory <= LOW_MEMORY_GB;
-  const lowCpu = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= LOW_CORES;
-  return Boolean(reduce || saveData || lowMem || lowCpu);
-}
-
-// lite = true → эффекты выключены; тумблер в настройках показывает обратное
-function setLite(lite) {
-  root.classList.toggle('lite', lite);
-  fxToggle.setAttribute('aria-checked', String(!lite));
-}
-
-let userChoseFx = false;
-
-fxToggle.addEventListener('click', function () {
-  userChoseFx = true;
-  const lite = !root.classList.contains('lite');
-  setLite(lite);
-  save(KEY_FX, lite ? 'off' : 'on');
-});
-
-// Замеряем реальную частоту кадров. Если ниже MIN_FPS, упрощаем эффекты
-function autoCheckFps() {
-  setTimeout(function () {
-    let startT = 0;
-    let frames = 0;
-
-    function step(t) {
-      if (userChoseFx || document.hidden || root.classList.contains('lite')) return;
-      if (!startT) startT = t;
-      frames++;
-      if (t - startT < 2000) {
-        requestAnimationFrame(step);
-      } else {
-        const fps = frames / ((t - startT) / 1000);
-        if (fps < MIN_FPS) setLite(true);   // не сохраняем: при следующем запуске проверим снова
-      }
+  const key = mode + ':' + idx;
+  if (key !== lastKey) {
+    lastKey = key;
+    const rows = $('scheduleList').children;
+    for (let i = 0; i < rows.length; i++) {
+      rows[i].classList.toggle('is-current', i === idx);
+      rows[i].classList.toggle('is-past', mode === 'done' || (idx >= 0 && i < idx));
     }
-    requestAnimationFrame(step);
-  }, 1500);
+  }
+}
+
+/* ================================================================
+   ВРЕМЯ НАЧАЛА: КНОПКИ, «+», СВОИ ВРЕМЕНА
+   ================================================================ */
+function renderTimes() {
+  $('timeButtons').innerHTML = allTimes().map(t =>
+    '<button type="button" class="chip' + (t === state.time ? ' is-active' : '') + '" data-time="' + t + '">' + t + '</button>'
+  ).join('') +
+  '<button type="button" class="chip chip--add" id="addTimeBtn" aria-label="Добавить своё время">+</button>';
+}
+
+function renderCustom() {
+  $('customEmpty').hidden = state.custom.length > 0;
+  $('customList').innerHTML = state.custom.map(t =>
+    '<li class="custom-item"><span>' + t + '</span>' +
+    '<button type="button" class="x" data-del="' + t + '" aria-label="Удалить ' + t + '">×</button></li>'
+  ).join('');
+}
+
+function setTime(t) {
+  state.time = t;
+  saveRaw(KEYS.time, t);
+  renderTimes();
+  rebuild();
+}
+
+/* ================================================================
+   СЧЁТЧИКИ (длины уроков и перемен)
+   ================================================================ */
+function renderSteppers() {
+  $('stepperList').innerHTML = STEPPERS.map(s =>
+    '<div class="stepper"><span class="stepper__name">' + s.label + '</span>' +
+    '<div class="stepper__ctl">' +
+    '<button type="button" class="round" data-key="' + s.key + '" data-dir="-1" aria-label="Меньше">−</button>' +
+    '<span class="stepper__val" id="val-' + s.key + '"></span>' +
+    '<button type="button" class="round" data-key="' + s.key + '" data-dir="1" aria-label="Больше">+</button>' +
+    '</div></div>'
+  ).join('');
+  updateSteppers();
+}
+
+function updateSteppers() {
+  STEPPERS.forEach(s => {
+    const v = state.cfg[s.key];
+    $('val-' + s.key).textContent = (s.zeroText && v === 0) ? s.zeroText : v + s.unit;
+  });
+}
+
+/* ================================================================
+   ТЕМЫ
+   ================================================================ */
+function renderThemes() {
+  $('themes').innerHTML = THEMES.map(t =>
+    '<button type="button" class="theme" data-id="' + t.id + '">' +
+    '<span class="theme__sw" style="background:linear-gradient(135deg,' + t.c[0] + ',' + t.c[1] + ')"></span>' +
+    '<span>' + t.name + '</span></button>'
+  ).join('');
+}
+
+function applyTheme(id) {
+  const th = THEMES.find(t => t.id === id) || THEMES[0];
+  state.theme = th.id;
+  document.documentElement.dataset.theme = th.id;
+  $('metaTheme').setAttribute('content', th.bg);
+  const btns = $('themes').children;
+  for (let i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('is-active', btns[i].dataset.id === th.id);
+  }
+  saveRaw(KEYS.theme, th.id);
+}
+
+/* ================================================================
+   ЭФФЕКТЫ / ЛЕГКИЙ РЕЖИМ
+   ================================================================ */
+function setLite(lite, persist) {
+  document.documentElement.classList.toggle('lite', lite);
+  $('fxToggle').setAttribute('aria-checked', String(!lite));
+  if (persist) saveRaw(KEYS.fx, lite ? 'off' : 'on');
+}
+
+function detectWeak() {
+  const n = navigator;
+  const lowMem = n.deviceMemory && n.deviceMemory <= 2;
+  const lowCpu = n.hardwareConcurrency && n.hardwareConcurrency <= 2;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return !!(lowMem || lowCpu || reduce);
+}
+
+function measureFps(cb) {
+  let frames = 0;
+  const t0 = performance.now();
+  function f(t) {
+    if (document.hidden) return;           // вкладка свёрнута — замер не считаем
+    frames++;
+    if (t - t0 < 1500) requestAnimationFrame(f);
+    else cb(frames / ((t - t0) / 1000));
+  }
+  requestAnimationFrame(f);
 }
 
 function initFx() {
-  const pref = load(KEY_FX);
-  if (pref === 'off') { userChoseFx = true; setLite(true); }
-  else if (pref === 'on') { userChoseFx = true; setLite(false); }
-  else {
-    setLite(isWeakDevice());
-    if (!root.classList.contains('lite')) autoCheckFps();
+  const saved = loadRaw(KEYS.fx);
+  if (saved === 'on' || saved === 'off') {
+    setLite(saved === 'off', false);
+    return;
+  }
+  setLite(detectWeak(), false);
+  setTimeout(() => {
+    measureFps(fps => {
+      if (fps < 40 && !loadRaw(KEYS.fx)) setLite(true, false);
+    });
+  }, 800);
+}
+
+/* ================================================================
+   ВКЛАДКИ И СВАЙП
+   ================================================================ */
+function setTab(name, animate) {
+  const next = TABS.indexOf(name);
+  if (next < 0) return;
+  const prev = TABS.indexOf(state.tab);
+  const cls = next > prev ? 'from-right' : 'from-left';
+
+  TABS.forEach(t => {
+    const v = $('view-' + t);
+    v.classList.remove('is-active', 'from-right', 'from-left');
+    if (t === name) {
+      v.classList.add('is-active');
+      if (animate && next !== prev) v.classList.add(cls);
+    }
+  });
+
+  const btns = $('tabbar').querySelectorAll('.tab');
+  btns.forEach(b => b.classList.toggle('is-active', b.dataset.tab === name));
+
+  state.tab = name;
+  window.scrollTo(0, 0);
+}
+
+function shiftTab(dir) {
+  const i = TABS.indexOf(state.tab) + dir;
+  if (i >= 0 && i < TABS.length) setTab(TABS[i], true);
+}
+
+/* ================================================================
+   ОБРАБОТЧИКИ
+   ================================================================ */
+function bindEvents() {
+  // кнопки времени и «+»
+  $('timeButtons').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.time) {
+      setTime(b.dataset.time);
+    } else if (b.id === 'addTimeBtn') {
+      const form = $('addTimeForm');
+      form.hidden = !form.hidden;
+      if (!form.hidden) $('customTimeInput').focus();
+    }
+  });
+
+  $('addTimeForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = $('customTimeInput').value;
+    if (!/^\d{2}:\d{2}$/.test(v)) return;
+    if (!allTimes().includes(v)) {
+      state.custom.push(v);
+      state.custom.sort((a, b) => parseHM(a) - parseHM(b));
+      saveJSON(KEYS.custom, state.custom);
+      renderCustom();
+    }
+    $('addTimeForm').hidden = true;
+    $('customTimeInput').value = '';
+    setTime(v);
+  });
+
+  $('customTimeCancel').addEventListener('click', () => {
+    $('addTimeForm').hidden = true;
+    $('customTimeInput').value = '';
+  });
+
+  // удаление своего времени
+  $('customList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-del]');
+    if (!b) return;
+    const t = b.dataset.del;
+    state.custom = state.custom.filter(x => x !== t);
+    saveJSON(KEYS.custom, state.custom);
+    renderCustom();
+    if (state.time === t) setTime(START_TIMES[0]);
+    else renderTimes();
+  });
+
+  // счётчики
+  $('stepperList').addEventListener('click', e => {
+    const b = e.target.closest('button[data-key]');
+    if (!b) return;
+    const s = STEPPERS.find(x => x.key === b.dataset.key);
+    const v = state.cfg[s.key] + Number(b.dataset.dir) * s.step;
+    state.cfg[s.key] = Math.min(s.max, Math.max(s.min, v));
+    saveJSON(KEYS.cfg, state.cfg);
+    updateSteppers();
+    rebuild();
+  });
+
+  $('resetCfg').addEventListener('click', () => {
+    state.cfg = Object.assign({}, DEFAULT_CFG);
+    saveJSON(KEYS.cfg, state.cfg);
+    updateSteppers();
+    rebuild();
+  });
+
+  // темы
+  $('themes').addEventListener('click', e => {
+    const b = e.target.closest('button[data-id]');
+    if (b) applyTheme(b.dataset.id);
+  });
+
+  // эффекты
+  $('fxToggle').addEventListener('click', () => {
+    const isOn = $('fxToggle').getAttribute('aria-checked') === 'true';
+    setLite(isOn, true);   // было включено -> включаем lite
+  });
+
+  // нижняя панель
+  $('tabbar').addEventListener('click', e => {
+    const b = e.target.closest('.tab');
+    if (b) setTab(b.dataset.tab, true);
+  });
+
+  // свайп пальцем
+  let sx = 0, sy = 0, tracking = false;
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { tracking = false; return; }
+    if (e.target.closest('input')) { tracking = false; return; }
+    tracking = true;
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    if (Math.abs(dx) >= SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      shiftTab(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+
+  // стрелки на ПК
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input')) return;
+    if (e.key === 'ArrowRight') shiftTab(1);
+    if (e.key === 'ArrowLeft') shiftTab(-1);
+  });
+
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+}
+
+/* ================================================================
+   СТАРТ
+   ================================================================ */
+function init() {
+  state.cfg = sanitizeCfg(loadJSON(KEYS.cfg, null));
+
+  const c = loadJSON(KEYS.custom, []);
+  state.custom = Array.isArray(c) ? c.filter(t => typeof t === 'string' && /^\d{2}:\d{2}$/.test(t)) : [];
+
+  const savedTime = loadRaw(KEYS.time);
+  state.time = (savedTime && allTimes().includes(savedTime)) ? savedTime : START_TIMES[0];
+
+  renderThemes();
+  applyTheme(loadRaw(KEYS.theme) || 'mono');
+  initFx();
+
+  renderTimes();
+  renderCustom();
+  renderSteppers();
+  bindEvents();
+  rebuild();
+  setTab('schedule', false);
+
+  setInterval(tick, 1000);
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
   }
 }
 
-/* =========================================================
-   10. ЗАПУСК
-   ========================================================= */
-function init() {
-  createTimeButtons();
-  setTheme(load(KEY_THEME) || DEFAULT_THEME, false);
-  initFx();
-  setStartTime(load(KEY_TIME) || DEFAULT_TIME, false);
-  setTab('schedule');
-  startTimer();
-}
-
 init();
-
-// Service worker: чтобы сайт работал без интернета и ставился на телефон
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function () {});
-  });
-}
