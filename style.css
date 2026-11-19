@@ -34,10 +34,10 @@ html[data-theme="redblue"]{
   --blob1:rgba(255,59,74,.35);--blob2:rgba(59,130,255,.35);--blob3:rgba(120,40,200,.2);
 }
 html[data-theme="ghoul"]{
-  --bg:#050203;--text:#f3e9e9;--muted:#a07a7a;
-  --card:rgba(30,0,0,.55);--card-solid:#140506;--line:rgba(255,30,30,.32);
-  --accent:#ff1f1f;--on-accent:#ffffff;--accent2:#9a1010;
-  --blob1:rgba(160,0,0,.22);--blob2:rgba(90,0,0,.25);--blob3:rgba(255,0,0,.08);
+  --bg:#030102;--text:#f6eaea;--muted:#b08585;
+  --card:rgba(24,0,0,.42);--card-solid:#140506;--line:rgba(255,30,30,.38);
+  --accent:#ff1f1f;--on-accent:#ffffff;--accent2:#b01212;
+  --blob1:rgba(170,0,0,.28);--blob2:rgba(100,0,0,.3);--blob3:rgba(255,0,0,.1);
 }
 html[data-theme="chrome"]{
   --bg:#0e1013;--text:#f2f5f8;--muted:#9aa4ae;
@@ -108,12 +108,6 @@ html[data-theme="redblue"] .bg__c{
 }
 @keyframes siren{from{opacity:.15}to{opacity:.85}}
 
-/* --- Гуль: тёмная виньетка --- */
-html[data-theme="ghoul"] .bg__c{
-  opacity:1;inset:0;
-  background:radial-gradient(circle at 50% 30%,transparent 25%,rgba(0,0,0,.85) 100%);
-}
-
 /* --- Хром: блик --- */
 html[data-theme="chrome"] .bg__c{
   opacity:1;
@@ -122,7 +116,7 @@ html[data-theme="chrome"] .bg__c{
 }
 @keyframes sweep{from{transform:translateX(-25%)}to{transform:translateX(25%)}}
 
-/* --- Киберпанк: сетка + сканлайны --- */
+/* --- Киберпанк: сканлайны --- */
 html[data-theme="cyber"] .bg__c{
   opacity:.5;
   background:repeating-linear-gradient(0deg,rgba(252,238,10,.08) 0 2px,transparent 2px 7px);
@@ -169,23 +163,89 @@ html[data-theme="space"] .bg__c{
 }
 @keyframes twinkle{from{opacity:.35}to{opacity:1}}
 
-/* ============ Глаз гуля ============ */
+/* ============ ТОКИЙСКИЙ ГУЛЬ: глаз, искры, виньетка ============ */
+.bg__eye,.bg__embers,.bg__vig{display:none}
+html[data-theme="ghoul"] .bg__eye,
+html[data-theme="ghoul"] .bg__embers,
+html[data-theme="ghoul"] .bg__vig{display:block}
+
+/* Глаз */
 .bg__eye{
-  display:none;position:absolute;left:50%;top:10vh;
-  width:min(125vw,720px);transform:translateX(-50%);opacity:.8;
+  position:absolute;left:50%;top:7vh;
+  width:min(118vw,820px);
+  transform:translateX(-50%);
+  opacity:.95;
 }
-html[data-theme="ghoul"] .bg__eye{display:block}
-.bg__eye svg{width:100%;height:auto;display:block}
+.bg__eye svg{width:100%;height:auto;display:block;overflow:visible;animation:heartbeat 2.8s ease-in-out infinite}
+
+/* Красное свечение за глазом */
+.bg__eye::before{
+  content:"";position:absolute;left:-15%;right:-15%;top:-60%;bottom:-60%;
+  z-index:-1;
+  background:radial-gradient(ellipse at center,rgba(255,0,0,.4) 0,rgba(160,0,0,.18) 32%,transparent 62%);
+  animation:glow 2.8s ease-in-out infinite;
+}
+
 .eye__blink{transform-box:fill-box;transform-origin:center;animation:blink 6s infinite}
 .eye__iris{transform-box:fill-box;transform-origin:center;animation:spin 40s linear infinite}
 .eye__pupil{transform-box:fill-box;transform-origin:center;animation:pupil 3s ease-in-out infinite alternate}
+.eye__veins{animation:veins 2.8s ease-in-out infinite}
+
 @keyframes blink{0%,91%,100%{transform:scaleY(1)}94%{transform:scaleY(.04)}97%{transform:scaleY(1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pupil{from{transform:scale(1,1)}to{transform:scale(1.35,1.06)}}
+@keyframes pupil{from{transform:scale(1,1)}to{transform:scale(1.5,1.08)}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.03)}24%{transform:scale(1)}36%{transform:scale(1.02)}50%{transform:scale(1)}}
+@keyframes glow{0%,100%{opacity:.55}12%{opacity:1}24%{opacity:.6}36%{opacity:.9}50%{opacity:.55}}
+@keyframes veins{0%,100%{opacity:.3}12%{opacity:.85}24%{opacity:.35}36%{opacity:.7}50%{opacity:.3}}
+
+/* Красные искры */
+.bg__embers{position:absolute;inset:0;overflow:hidden}
+.bg__embers::before,.bg__embers::after{content:"";position:absolute;left:0;right:0;top:0;bottom:-40%;will-change:transform,opacity}
+.bg__embers::before{
+  background:
+    radial-gradient(circle at 8% 70%,rgba(255,80,40,.95) 0 2px,transparent 4px),
+    radial-gradient(circle at 24% 88%,rgba(255,60,30,.9) 0 2px,transparent 4px),
+    radial-gradient(circle at 41% 64%,rgba(255,110,60,.85) 0 1.5px,transparent 3.5px),
+    radial-gradient(circle at 57% 92%,rgba(255,70,40,.95) 0 2px,transparent 4px),
+    radial-gradient(circle at 72% 72%,rgba(255,50,30,.9) 0 2.5px,transparent 4.5px),
+    radial-gradient(circle at 88% 86%,rgba(255,100,50,.85) 0 1.5px,transparent 3.5px),
+    radial-gradient(circle at 95% 60%,rgba(255,60,30,.9) 0 2px,transparent 4px);
+  animation:emberA 15s ease-in-out infinite alternate;
+}
+.bg__embers::after{
+  background:
+    radial-gradient(circle at 15% 82%,rgba(255,120,70,.8) 0 1.5px,transparent 3.5px),
+    radial-gradient(circle at 33% 68%,rgba(255,60,30,.9) 0 2px,transparent 4px),
+    radial-gradient(circle at 50% 80%,rgba(255,90,50,.8) 0 1px,transparent 3px),
+    radial-gradient(circle at 66% 62%,rgba(255,70,40,.9) 0 2px,transparent 4px),
+    radial-gradient(circle at 80% 90%,rgba(255,110,60,.8) 0 1.5px,transparent 3.5px),
+    radial-gradient(circle at 4% 58%,rgba(255,60,30,.85) 0 1.5px,transparent 3.5px);
+  animation:emberB 21s ease-in-out infinite alternate;
+}
+@keyframes emberA{from{transform:translate3d(0,6%,0);opacity:.5}to{transform:translate3d(2%,-22%,0);opacity:1}}
+@keyframes emberB{from{transform:translate3d(0,10%,0);opacity:1}to{transform:translate3d(-3%,-26%,0);opacity:.45}}
+
+/* Виньетка и красный туман снизу */
+.bg__vig{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(to top,rgba(120,0,0,.38) 0,transparent 36%),
+    radial-gradient(ellipse at 50% 28%,transparent 28%,rgba(0,0,0,.92) 100%);
+}
+
+/* Красное свечение текста в теме гуля (без анимации, не грузит телефон) */
+html[data-theme="ghoul"] .head h1{text-shadow:0 0 22px rgba(255,0,0,.6)}
+html[data-theme="ghoul"] .status__count{text-shadow:0 0 26px rgba(255,20,20,.55)}
+html[data-theme="ghoul"] .chip.is-active{box-shadow:0 0 16px rgba(255,0,0,.55)}
+html[data-theme="ghoul"] .card{border-color:rgba(255,30,30,.45)}
+html[data-theme="ghoul"] .row{border-color:rgba(255,30,30,.12)}
 
 /* ============ Режим «lite» (слабый телефон) ============ */
 .lite .bg__layer,
-.lite .bg__eye *{animation:none!important}
+.lite .bg__eye *,
+.lite .bg__eye::before,
+.lite .bg__embers::before,
+.lite .bg__embers::after{animation:none!important}
 .lite .card,
 .lite .tabbar{
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;

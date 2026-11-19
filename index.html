@@ -22,39 +22,74 @@
 
     <!-- Глаз гуля (виден только в теме «Токийский гуль») -->
     <div class="bg__eye">
-      <svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="irisG" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stop-color="#000"/>
-            <stop offset=".35" stop-color="#7a0000"/>
-            <stop offset=".75" stop-color="#ff1a1a"/>
-            <stop offset="1" stop-color="#4a0000"/>
+            <stop offset="0" stop-color="#4a0000"/>
+            <stop offset=".3" stop-color="#b80808"/>
+            <stop offset=".7" stop-color="#ff2a2a"/>
+            <stop offset=".92" stop-color="#ff6a50"/>
+            <stop offset="1" stop-color="#3a0000"/>
           </radialGradient>
+          <radialGradient id="scleraG" cx="50%" cy="50%" r="60%">
+            <stop offset="0" stop-color="#1c0000"/>
+            <stop offset="1" stop-color="#000"/>
+          </radialGradient>
+          <linearGradient id="lidShade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#000" stop-opacity=".9"/>
+            <stop offset=".35" stop-color="#000" stop-opacity="0"/>
+            <stop offset=".65" stop-color="#000" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000" stop-opacity=".9"/>
+          </linearGradient>
           <clipPath id="eyeClip">
-            <path d="M10 120 Q200 -40 390 120 Q200 280 10 120 Z"/>
+            <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z"/>
           </clipPath>
         </defs>
+
+        <!-- Жилы вокруг глаза -->
+        <g class="eye__veins" fill="none" stroke="#ff1f1f" stroke-width="2" stroke-linecap="round">
+          <path d="M90 150 C60 140 40 120 10 130"/>
+          <path d="M100 132 C70 100 50 80 20 60"/>
+          <path d="M108 172 C80 200 50 215 15 235"/>
+          <path d="M94 160 C60 175 40 170 5 185"/>
+          <path d="M510 150 C540 140 560 120 590 130"/>
+          <path d="M500 132 C530 100 550 80 580 60"/>
+          <path d="M492 172 C520 200 550 215 585 235"/>
+          <path d="M506 160 C540 175 560 170 595 185"/>
+          <path d="M220 85 C210 55 190 35 175 5"/>
+          <path d="M300 70 C300 45 305 25 300 0"/>
+          <path d="M380 85 C390 55 410 35 425 5"/>
+          <path d="M220 215 C210 245 190 265 175 295"/>
+          <path d="M300 230 C300 255 295 275 300 300"/>
+          <path d="M380 215 C390 245 410 265 425 295"/>
+        </g>
+
+        <!-- Сам глаз (моргает) -->
         <g class="eye__blink">
-          <path d="M10 120 Q200 -40 390 120 Q200 280 10 120 Z" fill="#050000" stroke="#ff2a2a" stroke-width="4"/>
+          <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z" fill="none" stroke="#ff1f1f" stroke-width="16" opacity=".18"/>
+          <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z" fill="url(#scleraG)"/>
+
           <g clip-path="url(#eyeClip)">
             <g class="eye__iris">
-              <circle cx="200" cy="120" r="80" fill="url(#irisG)"/>
-              <g stroke="#ff5050" stroke-width="2" opacity=".55">
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(0 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(45 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(90 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(135 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(180 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(225 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(270 200 120)"/>
-                <line x1="200" y1="48" x2="200" y2="78" transform="rotate(315 200 120)"/>
-              </g>
+              <circle cx="300" cy="150" r="80" fill="url(#irisG)"/>
+              <circle cx="300" cy="150" r="58" fill="none" stroke="#ff8a70" stroke-width="44" stroke-dasharray="1.5 6.5" opacity=".28"/>
+              <circle cx="300" cy="150" r="62" fill="none" stroke="#300000" stroke-width="36" stroke-dasharray="2 9" opacity=".35"/>
+              <circle cx="300" cy="150" r="34" fill="none" stroke="#ff9a8a" stroke-width="1.5" opacity=".4"/>
+              <circle cx="300" cy="150" r="79" fill="none" stroke="#2a0000" stroke-width="4"/>
             </g>
-            <ellipse class="eye__pupil" cx="200" cy="120" rx="15" ry="50" fill="#000"/>
+            <ellipse class="eye__pupil" cx="300" cy="150" rx="11" ry="64" fill="#000"/>
+            <ellipse cx="268" cy="108" rx="14" ry="7" fill="#fff" opacity=".35" transform="rotate(-30 268 108)"/>
+            <rect x="90" y="60" width="420" height="180" fill="url(#lidShade)"/>
           </g>
+
+          <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z" fill="none" stroke="#ff2a2a" stroke-width="3"/>
         </g>
       </svg>
     </div>
+
+    <!-- Искры и виньетка (только для гуля) -->
+    <div class="bg__embers"></div>
+    <div class="bg__vig"></div>
   </div>
 
   <main class="app">

@@ -1,4 +1,4 @@
-const CACHE = 'raspisanie-v5';
+const CACHE = 'raspisanie-v6';
 const FILES = ['./', './index.html', './style.css', './script.js', './manifest.json', './icon.svg'];
 
 // Установка: кладём свежие файлы в кэш (в обход кэша браузера)
