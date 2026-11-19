@@ -90,6 +90,75 @@
     <!-- Искры и виньетка (только для гуля) -->
     <div class="bg__embers"></div>
     <div class="bg__vig"></div>
+
+    <!-- Такидзава с белыми волосами (виден только в теме «Такидзава») -->
+    <div class="bg__tk">
+      <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="tkHairG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset="1" stop-color="#cfd0ea"/>
+          </linearGradient>
+          <linearGradient id="tkSkinG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e4d9ee"/>
+            <stop offset="1" stop-color="#a999bb"/>
+          </linearGradient>
+        </defs>
+
+        <g class="tk__body">
+          <!-- Плечи и пальто -->
+          <path d="M0 500 L0 445 C20 405 90 385 168 368 L200 400 L232 368 C310 385 380 405 400 445 L400 500 Z" fill="#0d0714" stroke="#b388ff" stroke-width="2" stroke-opacity=".5"/>
+          <!-- Шея -->
+          <path d="M172 295 L228 295 L234 375 L200 402 L166 375 Z" fill="#8f819f"/>
+          <path d="M172 295 L228 295 L226 335 Q200 350 174 335 Z" fill="#000" opacity=".25"/>
+          <!-- Воротник -->
+          <path d="M150 350 L200 408 L108 434 L96 392 Z" fill="#150a22" stroke="#b388ff" stroke-width="2" stroke-opacity=".6"/>
+          <path d="M250 350 L200 408 L292 434 L304 392 Z" fill="#150a22" stroke="#b388ff" stroke-width="2" stroke-opacity=".6"/>
+
+          <!-- Лицо -->
+          <path d="M130 190 C130 130 165 100 200 100 C235 100 270 130 270 190 C270 250 240 305 200 320 C160 305 130 250 130 190 Z" fill="url(#tkSkinG)"/>
+          <!-- Тень под скулами -->
+          <path d="M138 235 C150 285 175 312 200 320 C225 312 250 285 262 235 C250 270 225 300 200 304 C175 300 150 270 138 235 Z" fill="#000" opacity=".18"/>
+          <!-- Тень на лбу от чёлки -->
+          <ellipse cx="200" cy="168" rx="68" ry="26" fill="#000" opacity=".22"/>
+
+          <!-- Левый глаз (обычный) -->
+          <path d="M148 208 Q170 194 192 208 Q170 218 148 208 Z" fill="#f6f0fa"/>
+          <circle cx="170" cy="207" r="7" fill="#2a1a3a"/>
+          <circle cx="170" cy="207" r="3" fill="#000"/>
+          <circle cx="173" cy="204" r="1.8" fill="#fff"/>
+          <path d="M144 193 L194 201" stroke="#2a1a3a" stroke-width="5" stroke-linecap="round"/>
+
+          <!-- Правый глаз (гуль) -->
+          <path d="M208 208 Q230 194 252 208 Q230 218 208 208 Z" fill="#050005"/>
+          <g class="tk__kakugan">
+            <circle cx="230" cy="207" r="8" fill="#ff2040"/>
+            <ellipse cx="230" cy="207" rx="2.2" ry="7" fill="#000"/>
+          </g>
+          <path d="M206 201 L256 193" stroke="#2a1a3a" stroke-width="5" stroke-linecap="round"/>
+          <!-- Линии под глазом гуля -->
+          <path d="M214 220 L226 232 M232 221 L242 230" stroke="#ff2040" stroke-width="1.5" stroke-linecap="round" opacity=".7"/>
+
+          <!-- Шрам над левым глазом -->
+          <path d="M158 178 L176 226" stroke="#8a3a5a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M155 190 L165 188 M158 202 L168 199 M162 214 L172 211" stroke="#8a3a5a" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- Нос и рот -->
+          <path d="M200 216 L195 246 L205 248" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M180 281 Q200 287 222 278" fill="none" stroke="#4a2a4a" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- Стежки на щеке -->
+          <path d="M243 240 L264 256" stroke="#5a3a5a" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M246 252 L252 244 M252 258 L258 250 M258 264 L264 256" stroke="#5a3a5a" stroke-width="2" stroke-linecap="round"/>
+        </g>
+
+        <!-- Белые волосы -->
+        <g class="tk__hair">
+          <path d="M118 215 C105 150 120 95 160 70 L150 40 L180 62 L200 25 L220 62 L252 38 L242 72 C285 95 298 150 282 215 C275 175 262 150 245 135 L225 178 L205 128 L185 175 L165 135 C145 152 128 178 118 215 Z" fill="url(#tkHairG)" stroke="#9a96b8" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M200 40 L198 110 M170 70 L178 125 M232 72 L224 125 M148 100 L158 150 M254 100 L244 150" stroke="#9a96b8" stroke-width="1.8" stroke-linecap="round" opacity=".7" fill="none"/>
+        </g>
+      </svg>
+    </div>
   </div>
 
   <main class="app">

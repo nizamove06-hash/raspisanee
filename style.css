@@ -169,7 +169,7 @@ html[data-theme="space"] .bg__c{
 }
 @keyframes twinkle{from{opacity:.35}to{opacity:1}}
 
-/* --- Такидзава: фиолетово-розовое свечение (без фото) --- */
+/* ============ ТАКИДЗАВА: фиолетовое свечение и рисунок ============ */
 html[data-theme="takizawa"] .bg__c{
   opacity:.8;
   background:
@@ -182,6 +182,33 @@ html[data-theme="takizawa"] .bg__c{
 html[data-theme="takizawa"] .head h1{text-shadow:0 0 22px rgba(179,136,255,.65)}
 html[data-theme="takizawa"] .status__count{text-shadow:0 0 26px rgba(179,136,255,.5)}
 html[data-theme="takizawa"] .chip.is-active{box-shadow:0 0 16px rgba(179,136,255,.55)}
+
+.bg__tk{display:none}
+html[data-theme="takizawa"] .bg__tk{display:block}
+
+.bg__tk{
+  position:absolute;left:50%;bottom:0;
+  width:min(130vw,640px);
+  transform:translateX(-50%);
+  opacity:.6;
+}
+.bg__tk svg{width:100%;height:auto;display:block;overflow:visible;animation:tkFloat 7s ease-in-out infinite alternate}
+
+/* Фиолетовое свечение за фигурой */
+.bg__tk::before{
+  content:"";position:absolute;left:-10%;right:-10%;top:-5%;bottom:10%;
+  z-index:-1;
+  background:radial-gradient(ellipse at 50% 40%,rgba(179,136,255,.5) 0,rgba(120,70,220,.2) 40%,transparent 68%);
+  animation:tkGlow 5s ease-in-out infinite alternate;
+}
+
+.tk__hair{transform-box:fill-box;transform-origin:50% 100%;animation:tkHair 5s ease-in-out infinite alternate}
+.tk__kakugan{animation:tkPulse 2.4s ease-in-out infinite alternate}
+
+@keyframes tkFloat{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+@keyframes tkGlow{from{opacity:.6}to{opacity:1}}
+@keyframes tkHair{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
+@keyframes tkPulse{from{opacity:.55}to{opacity:1}}
 
 /* ============ ТОКИЙСКИЙ ГУЛЬ: глаз, искры, виньетка ============ */
 .bg__eye,.bg__embers,.bg__vig{display:none}
@@ -265,7 +292,9 @@ html[data-theme="ghoul"] .row{border-color:rgba(255,30,30,.12)}
 .lite .bg__eye *,
 .lite .bg__eye::before,
 .lite .bg__embers::before,
-.lite .bg__embers::after{animation:none!important}
+.lite .bg__embers::after,
+.lite .bg__tk *,
+.lite .bg__tk::before{animation:none!important}
 .lite .card,
 .lite .tabbar{
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
