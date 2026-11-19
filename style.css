@@ -169,16 +169,15 @@ html[data-theme="space"] .bg__c{
 }
 @keyframes twinkle{from{opacity:.35}to{opacity:1}}
 
-/* ============ ТАКИДЗАВА: твоё фото на фоне ============ */
-/* Файл takizawa.webp должен лежать рядом с index.html и style.css */
+/* --- Такидзава: фиолетово-розовое свечение (без фото) --- */
 html[data-theme="takizawa"] .bg__c{
-  opacity:1;inset:0;
+  opacity:.8;
   background:
-    linear-gradient(to bottom,rgba(6,2,12,.25) 0,rgba(6,2,12,.55) 55%,rgba(6,2,12,.88) 100%),
-    url("./takizawa.webp") center top/cover no-repeat;
-  animation:photoZoom 24s ease-in-out infinite alternate;
+    radial-gradient(circle at 50% 25%,rgba(179,136,255,.35) 0,transparent 45%),
+    radial-gradient(circle at 50% 90%,rgba(255,77,109,.25) 0,transparent 45%);
+  animation:pulseGlow 6s ease-in-out infinite alternate;
 }
-@keyframes photoZoom{from{transform:scale(1)}to{transform:scale(1.07)}}
+@keyframes pulseGlow{from{opacity:.45}to{opacity:1}}
 
 html[data-theme="takizawa"] .head h1{text-shadow:0 0 22px rgba(179,136,255,.65)}
 html[data-theme="takizawa"] .status__count{text-shadow:0 0 26px rgba(179,136,255,.5)}
