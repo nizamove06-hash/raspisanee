@@ -6,8 +6,8 @@ const LESSON_MIN      = 40;  // длина урока, мин
 const BREAK_MIN       = 10;  // обычная перемена, мин
 const BIG_BREAK_MIN   = 15;  // большая перемена, мин
 const BIG_BREAK_AFTER = 3;   // после какого урока большая перемена
-const LESSON_NAMES    = [];  // например ['Математика', 'Русский', ...]
 const SWIPE_MIN_PX    = 60;
+const NAME_MAX        = 24;  // максимум символов в названии предмета
 
 const TIMES = ['12:10', '12:20', '13:50', '13:10', '14:00', '14:50', '15:00', '11:30'];
 
@@ -26,7 +26,8 @@ const THEMES = [
 
 const K = {
   time: 'raspisanie.time', theme: 'raspisanie.theme', fx: 'raspisanie.fx',
-  cfg: 'raspisanie.cfg', custom: 'raspisanie.custom'
+  cfg: 'raspisanie.cfg', custom: 'raspisanie.custom',
+  names: 'raspisanie.names', subjects: 'raspisanie.subjects'
 };
 
 const DEF = { lessons: LESSONS_COUNT, lesson: LESSON_MIN, brk: BREAK_MIN, big: BIG_BREAK_MIN, bigAfter: BIG_BREAK_AFTER };
@@ -45,7 +46,10 @@ const fmtDur = s => {
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
   return (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(x);
 };
-const lessonName = n => LESSON_NAMES[n - 1] || n + ' урок';
+const dayKey = () => {
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+};
 
 /* ===== Хранилище ===== */
 const ls = {
@@ -67,9 +71,23 @@ function loadCustom() {
   const a = loadJson(K.custom, []);
   return Array.isArray(a) ? a.filter(t => /^\d{2}:\d{2}$/.test(t)) : [];
 }
+function loadNames() {
+  const o = loadJson(K.names, {});
+  if (o && o.d === dayKey() && Array.isArray(o.n)) {
+    return o.n.map(x => (typeof x === 'string' ? x : ''));
+  }
+  return [];
+}
+function loadSubjects() {
+  const a = loadJson(K.subjects, []);
+  return Array.isArray(a) ? a.filter(x => typeof x === 'string' && x.trim()).slice(0, 40) : [];
+}
 
 /* ===== Состояние ===== */
-const state = { cfg: loadCfg(), custom: loadCustom(), time: TIMES[0], theme: 'mono', plan: [], fxPref: null };
+const state = {
+  cfg: loadCfg(), custom: loadCustom(), time: TIMES[0], theme: 'mono', plan: [], fxPref: null,
+  names: loadNames(), namesDay: dayKey(), subjects: loadSubjects()
+};
 const allTimes = () => TIMES.concat(state.custom.filter(t => !TIMES.includes(t)));
 
 (function initState() {
@@ -83,6 +101,84 @@ const allTimes = () => TIMES.concat(state.custom.filter(t => !TIMES.includes(t))
   const fx = clean(ls.get(K.fx));
   if (fx != null) state.fxPref = !(fx === 'off' || fx === '0' || fx === 'lite' || fx === 'false');
 })();
+
+/* ===== Названия предметов (на сегодня) ===== */
+const lessonName = n => ((state.names[n - 1] || '').trim()) || n + ' урок';
+
+function saveNames() {
+  state.namesDay = dayKey();
+  ls.set(K.names, JSON.stringify({ d: state.namesDay, n: state.names }));
+}
+
+// true, если наступил новый день и названия сброшены
+function checkDay() {
+  const d = dayKey();
+  if (state.namesDay === d) return false;
+  state.namesDay = d;
+  state.names = [];
+  saveNames();
+  return true;
+}
+
+function addSubject(name) {
+  const low = name.toLowerCase();
+  state.subjects = state.subjects.filter(s => s.toLowerCase() !== low);
+  state.subjects.unshift(name);
+  state.subjects = state.subjects.slice(0, 40);
+  ls.set(K.subjects, JSON.stringify(state.subjects));
+  fillDatalist();
+}
+
+function fillDatalist() {
+  const dl = $('subjectsList');
+  if (!dl) return;
+  dl.innerHTML = '';
+  state.subjects.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    dl.appendChild(o);
+  });
+}
+
+function editLesson(li) {
+  const n = +li.dataset.n;
+  const span = li.querySelector('.row__name');
+  if (!span || li.querySelector('input')) return;
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'row__input';
+  inp.maxLength = NAME_MAX;
+  inp.placeholder = n + ' урок: какой предмет?';
+  inp.setAttribute('list', 'subjectsList');
+  inp.setAttribute('autocomplete', 'off');
+  inp.value = state.names[n - 1] || '';
+
+  let done = false;
+  const finish = save => {
+    if (done) return;
+    done = true;
+    if (save) {
+      const v = inp.value.trim().slice(0, NAME_MAX);
+      while (state.names.length < n) state.names.push('');
+      state.names[n - 1] = v;
+      if (v) addSubject(v);
+      saveNames();
+    }
+    renderSchedule();
+    render();
+  };
+
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') finish(false);
+  });
+  inp.addEventListener('blur', () => finish(true));
+
+  span.replaceWith(inp);
+  inp.focus();
+  inp.select();
+}
 
 /* ===== План дня ===== */
 function buildPlan() {
@@ -105,7 +201,8 @@ function renderSchedule() {
   ol.innerHTML = '';
   state.plan.forEach(s => {
     const li = document.createElement('li');
-    li.className = 'row' + (s.type === 'break' ? ' row--break' : '');
+    li.className = 'row' + (s.type === 'break' ? ' row--break' : ' row--lesson');
+    if (s.type === 'lesson') li.dataset.n = s.n;
     const a = document.createElement('span');
     a.className = 'row__name';
     a.textContent = s.type === 'lesson' ? lessonName(s.n) : 'Перемена · ' + (s.end - s.start) + ' мин';
@@ -118,6 +215,8 @@ function renderSchedule() {
 }
 
 function render() {
+  if (checkDay() && !document.querySelector('.row__input')) renderSchedule();
+
   const now = new Date();
   const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
   const p = state.plan;
@@ -289,6 +388,31 @@ function buildEmbers() {
   }
 }
 
+/* ===== Подсказка и кнопка под списком уроков ===== */
+function buildNamesUi() {
+  const dl = document.createElement('datalist');
+  dl.id = 'subjectsList';
+  document.body.appendChild(dl);
+  fillDatalist();
+
+  const tip = document.createElement('p');
+  tip.className = 'hint tip';
+  tip.textContent = 'Нажми на урок, чтобы вписать предмет. Названия сами сбрасываются каждый день.';
+
+  const clr = document.createElement('button');
+  clr.type = 'button';
+  clr.className = 'btn btn--ghost wide';
+  clr.textContent = 'Очистить названия';
+  clr.addEventListener('click', () => {
+    state.names = [];
+    saveNames();
+    renderSchedule();
+    render();
+  });
+
+  $('scheduleList').after(tip, clr);
+}
+
 /* ===== Вкладки ===== */
 function setTab(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('is-active', v.id === 'view-' + name));
@@ -313,6 +437,11 @@ function bind() {
     } else if (b.dataset.time) {
       selectTime(b.dataset.time);
     }
+  });
+
+  $('scheduleList').addEventListener('click', e => {
+    const li = e.target.closest('.row--lesson');
+    if (li) editLesson(li);
   });
 
   $('addTimeForm').addEventListener('submit', e => {
@@ -403,6 +532,7 @@ function init() {
   renderChips(); renderSteppers(); renderCustom(); renderThemes(); renderSchedule();
   applyTheme(state.theme, false);
   buildEmbers();
+  buildNamesUi();
   bind();
 
   setLite(state.fxPref === null ? !!detectWeak() : !state.fxPref);
