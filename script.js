@@ -103,6 +103,13 @@ const nextText     = $('nextText');
 const scheduleList = $('scheduleList');
 const themesBox    = $('themes');
 const fxToggle     = $('fxToggle');
+const tabbar       = $('tabbar');
+
+// Две вкладки: ключ = значение data-tab у кнопки в нижней панели
+const views = {
+  schedule: $('view-schedule'),
+  settings: $('view-settings')
+};
 
 /* =========================================================
    4. РАСПИСАНИЕ
@@ -249,7 +256,7 @@ function loop() {
 function startTimer() { stopTimer(); loop(); }
 function stopTimer()  { clearTimeout(timerId); timerId = null; }
 
-// Вкладка скрыта: останавливаем таймер и анимации, экономим батарею
+// Вкладка браузера скрыта: останавливаем таймер и анимации, экономим батарею
 document.addEventListener('visibilitychange', function () {
   if (document.hidden) {
     stopTimer();
@@ -297,14 +304,37 @@ function setStartTime(str, store) {
 }
 
 /* =========================================================
-   7. ТЕМЫ
+   7. ВКЛАДКИ (Расписание / Настройки)
+   ========================================================= */
+function setTab(name) {
+  if (!views[name]) name = 'schedule';
+
+  Object.keys(views).forEach(function (key) {
+    views[key].hidden = (key !== name);
+  });
+
+  const btns = tabbar.querySelectorAll('.tab-btn');
+  for (let i = 0; i < btns.length; i++) {
+    btns[i].setAttribute('aria-selected', String(btns[i].dataset.tab === name));
+  }
+
+  window.scrollTo(0, 0);
+}
+
+tabbar.addEventListener('click', function (e) {
+  const btn = e.target.closest('.tab-btn');
+  if (btn) setTab(btn.dataset.tab);
+});
+
+/* =========================================================
+   8. ТЕМЫ (кнопки лежат на вкладке «Настройки»)
    ========================================================= */
 function setTheme(name, store) {
   if (!THEMES[name]) name = DEFAULT_THEME;
   root.setAttribute('data-theme', name);
   metaTheme.setAttribute('content', THEMES[name].color);
 
-  const btns = themesBox.children;
+  const btns = themesBox.querySelectorAll('.theme-btn');
   for (let i = 0; i < btns.length; i++) {
     const active = btns[i].dataset.theme === name;
     btns[i].classList.toggle('is-active', active);
@@ -319,7 +349,7 @@ themesBox.addEventListener('click', function (e) {
 });
 
 /* =========================================================
-   8. ЭФФЕКТЫ И ЛЁГКИЙ РЕЖИМ ДЛЯ СЛАБЫХ УСТРОЙСТВ
+   9. ЭФФЕКТЫ И ЛЁГКИЙ РЕЖИМ ДЛЯ СЛАБЫХ УСТРОЙСТВ
    ========================================================= */
 function isWeakDevice() {
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -329,10 +359,10 @@ function isWeakDevice() {
   return Boolean(reduce || saveData || lowMem || lowCpu);
 }
 
+// lite = true → эффекты выключены; тумблер в настройках показывает обратное
 function setLite(lite) {
   root.classList.toggle('lite', lite);
-  fxToggle.setAttribute('aria-pressed', String(!lite));
-  fxToggle.textContent = lite ? '✨ Выкл' : '✨ Вкл';
+  fxToggle.setAttribute('aria-checked', String(!lite));
 }
 
 let userChoseFx = false;
@@ -376,13 +406,14 @@ function initFx() {
 }
 
 /* =========================================================
-   9. ЗАПУСК
+   10. ЗАПУСК
    ========================================================= */
 function init() {
   createTimeButtons();
   setTheme(load(KEY_THEME) || DEFAULT_THEME, false);
   initFx();
   setStartTime(load(KEY_TIME) || DEFAULT_TIME, false);
+  setTab('schedule');
   startTimer();
 }
 

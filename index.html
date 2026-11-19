@@ -26,22 +26,10 @@
 
   <div class="page">
 
-    <header class="top">
+    <!-- ===================== ВКЛАДКА 1: РАСПИСАНИЕ ===================== -->
+    <main class="view" id="view-schedule" role="tabpanel">
       <h1 class="title">Расписание</h1>
 
-      <div class="corner">
-        <div class="themes" id="themes" role="group" aria-label="Выбор темы">
-          <button class="theme-btn" type="button" data-theme="mono"    aria-label="Тема: чёрно-серая"        title="Чёрно-серая"></button>
-          <button class="theme-btn" type="button" data-theme="neon"    aria-label="Тема: фиолетово-неоновая" title="Фиолетово-неоновая"></button>
-          <button class="theme-btn" type="button" data-theme="redblue" aria-label="Тема: красно-синяя"       title="Красно-синяя"></button>
-          <button class="theme-btn" type="button" data-theme="ghoul"   aria-label="Тема: токийский гуль"     title="Токийский гуль"></button>
-          <button class="theme-btn" type="button" data-theme="chrome"  aria-label="Тема: хромовая"           title="Хромовая"></button>
-        </div>
-        <button class="fx-btn" type="button" id="fxToggle" aria-pressed="true" title="Включить или выключить эффекты">✨ Вкл</button>
-      </div>
-    </header>
-
-    <main>
       <section class="times" aria-labelledby="timesTitle">
         <h2 class="section-title" id="timesTitle">Начало первого урока</h2>
         <!-- Кнопки времени создаёт script.js из списка START_TIMES -->
@@ -67,8 +55,98 @@
       </section>
     </main>
 
-    <footer class="foot">Выбор времени и темы сохраняется на этом устройстве</footer>
+    <!-- ===================== ВКЛАДКА 2: НАСТРОЙКИ ===================== -->
+    <main class="view" id="view-settings" role="tabpanel" hidden>
+      <h1 class="title">Настройки</h1>
+
+      <section aria-labelledby="themesTitle">
+        <h2 class="section-title" id="themesTitle">Тема оформления</h2>
+
+        <div class="themes" id="themes" role="group" aria-label="Выбор темы">
+          <button class="theme-btn" type="button" data-theme="mono">
+            <span class="theme-btn__sw" aria-hidden="true"></span>
+            <span class="theme-btn__text">
+              <span class="theme-btn__name">Чёрно-серая</span>
+              <span class="theme-btn__desc">Строгая и минималистичная</span>
+            </span>
+            <span class="theme-btn__check" aria-hidden="true">✓</span>
+          </button>
+
+          <button class="theme-btn" type="button" data-theme="neon">
+            <span class="theme-btn__sw" aria-hidden="true"></span>
+            <span class="theme-btn__text">
+              <span class="theme-btn__name">Фиолетово-неоновая</span>
+              <span class="theme-btn__desc">Свечение и неон</span>
+            </span>
+            <span class="theme-btn__check" aria-hidden="true">✓</span>
+          </button>
+
+          <button class="theme-btn" type="button" data-theme="redblue">
+            <span class="theme-btn__sw" aria-hidden="true"></span>
+            <span class="theme-btn__text">
+              <span class="theme-btn__name">Красно-синяя</span>
+              <span class="theme-btn__desc">Контрастная и энергичная</span>
+            </span>
+            <span class="theme-btn__check" aria-hidden="true">✓</span>
+          </button>
+
+          <button class="theme-btn" type="button" data-theme="ghoul">
+            <span class="theme-btn__sw" aria-hidden="true"></span>
+            <span class="theme-btn__text">
+              <span class="theme-btn__name">Токийский гуль</span>
+              <span class="theme-btn__desc">Мрачная, с красными акцентами</span>
+            </span>
+            <span class="theme-btn__check" aria-hidden="true">✓</span>
+          </button>
+
+          <button class="theme-btn" type="button" data-theme="chrome">
+            <span class="theme-btn__sw" aria-hidden="true"></span>
+            <span class="theme-btn__text">
+              <span class="theme-btn__name">Хромовая</span>
+              <span class="theme-btn__desc">Металлический блеск и блики</span>
+            </span>
+            <span class="theme-btn__check" aria-hidden="true">✓</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-group" aria-labelledby="fxTitle">
+        <h2 class="section-title" id="fxTitle">Производительность</h2>
+
+        <button class="switch-row" type="button" id="fxToggle" role="switch" aria-checked="true">
+          <span class="switch-row__text">
+            <span class="switch-row__title">Анимации и эффекты</span>
+            <span class="switch-row__hint">Выключи, если телефон тормозит</span>
+          </span>
+          <span class="switch" aria-hidden="true"></span>
+        </button>
+      </section>
+
+      <p class="foot">Выбор времени и темы сохраняется на этом устройстве</p>
+    </main>
+
   </div>
+
+  <!-- Нижняя панель вкладок -->
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Разделы">
+    <div class="tabbar__inner">
+      <button class="tab-btn" type="button" role="tab" data-tab="schedule" aria-selected="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3 2"/>
+        </svg>
+        <span>Расписание</span>
+      </button>
+      <button class="tab-btn" type="button" role="tab" data-tab="settings" aria-selected="false">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h10M19 7h1M4 17h1M10 17h10"/>
+          <circle cx="16.5" cy="7" r="2.5"/>
+          <circle cx="7.5" cy="17" r="2.5"/>
+        </svg>
+        <span>Настройки</span>
+      </button>
+    </div>
+  </nav>
 
 </body>
 </html>
