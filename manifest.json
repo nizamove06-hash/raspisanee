@@ -1,0 +1,20 @@
+{
+  "name": "Расписание уроков",
+  "short_name": "Расписание",
+  "description": "Школьное расписание на день с обратным отсчётом",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0d0f",
+  "theme_color": "#0d0d0f",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
