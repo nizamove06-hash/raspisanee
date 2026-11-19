@@ -1,4 +1,4 @@
-const CACHE = 'raspisanie-v10';
+const CACHE = 'raspisanie-v11';
 const FILES = [
   './', './index.html', './style.css', './script.js', './manifest.json',
   './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'
