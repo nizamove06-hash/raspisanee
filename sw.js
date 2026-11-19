@@ -1,5 +1,5 @@
-// Если изменишь файлы и на телефоне не обновилось, поменяй номер версии: v2 → v3
-const CACHE = 'raspisanie-v2';
+// Если изменишь файлы и на телефоне не обновилось, поменяй номер версии: v3 → v4
+const CACHE = 'raspisanie-v3';
 
 const FILES = [
   './',
@@ -14,7 +14,10 @@ self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE)
       .then(function (cache) {
-        return Promise.allSettled(FILES.map(function (f) { return cache.add(f); }));
+        // cache: 'reload' = брать файлы строго с сервера, а не из кэша браузера
+        return Promise.allSettled(FILES.map(function (f) {
+          return cache.add(new Request(f, { cache: 'reload' }));
+        }));
       })
       .then(function () { return self.skipWaiting(); })
   );
@@ -31,13 +34,14 @@ self.addEventListener('activate', function (event) {
   );
 });
 
-// Сначала пробуем сеть (всегда свежая версия), нет интернета, берём из кэша
+// Сначала спрашиваем сервер (cache: 'no-cache' = всегда проверять, есть ли новая версия).
+// Нет интернета: берём копию из кэша.
 self.addEventListener('fetch', function (event) {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(req)
+    fetch(req, { cache: 'no-cache' })
       .then(function (res) {
         if (res && res.ok) {
           const copy = res.clone();
