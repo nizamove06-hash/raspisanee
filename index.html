@@ -1,240 +1,245 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Расписание</title>
-  <meta name="theme-color" content="#0b0b0d" id="metaTheme">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d" id="metaTheme">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Расписание</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+<script>try{var t=localStorage.getItem('raspisanie.theme');if(t)document.documentElement.dataset.theme=t.replace(/"/g,'')}catch(e){}</script>
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
-  <!-- Фон -->
-  <div class="bg" aria-hidden="true">
-    <div class="bg__layer bg__a"></div>
-    <div class="bg__layer bg__b"></div>
-    <div class="bg__layer bg__c"></div>
+<div class="bg" aria-hidden="true">
+  <div class="bg__layer bg__a"></div>
+  <div class="bg__layer bg__b"></div>
+  <div class="bg__layer bg__c"></div>
 
-    <!-- Глаз гуля (виден только в теме «Токийский гуль») -->
-    <div class="bg__eye">
-      <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="irisG" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stop-color="#4a0000"/>
-            <stop offset=".3" stop-color="#b80808"/>
-            <stop offset=".7" stop-color="#ff2a2a"/>
-            <stop offset=".92" stop-color="#ff6a50"/>
-            <stop offset="1" stop-color="#3a0000"/>
-          </radialGradient>
-          <radialGradient id="scleraG" cx="50%" cy="50%" r="60%">
-            <stop offset="0" stop-color="#1c0000"/>
-            <stop offset="1" stop-color="#000"/>
-          </radialGradient>
-          <linearGradient id="lidShade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#000" stop-opacity=".9"/>
-            <stop offset=".35" stop-color="#000" stop-opacity="0"/>
-            <stop offset=".65" stop-color="#000" stop-opacity="0"/>
-            <stop offset="1" stop-color="#000" stop-opacity=".9"/>
-          </linearGradient>
-          <clipPath id="eyeClip">
-            <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z"/>
-          </clipPath>
-        </defs>
+  <!-- ГУЛЬ: глаз -->
+  <div class="bg__eye">
+    <svg viewBox="-60 -30 520 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gIris" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#ff5a4d"/>
+          <stop offset=".45" stop-color="#e00000"/>
+          <stop offset="1" stop-color="#4a0000"/>
+        </radialGradient>
+        <radialGradient id="gSclera" cx="50%" cy="50%" r="60%">
+          <stop offset="0" stop-color="#220000"/>
+          <stop offset="1" stop-color="#000"/>
+        </radialGradient>
+        <clipPath id="eyeClip"><path d="M10 130 Q200 -40 390 130 Q200 300 10 130Z"/></clipPath>
+      </defs>
 
-        <!-- Жилы вокруг глаза -->
-        <g class="eye__veins" fill="none" stroke="#ff1f1f" stroke-width="2" stroke-linecap="round">
-          <path d="M90 150 C60 140 40 120 10 130"/>
-          <path d="M100 132 C70 100 50 80 20 60"/>
-          <path d="M108 172 C80 200 50 215 15 235"/>
-          <path d="M94 160 C60 175 40 170 5 185"/>
-          <path d="M510 150 C540 140 560 120 590 130"/>
-          <path d="M500 132 C530 100 550 80 580 60"/>
-          <path d="M492 172 C520 200 550 215 585 235"/>
-          <path d="M506 160 C540 175 560 170 595 185"/>
-          <path d="M220 85 C210 55 190 35 175 5"/>
-          <path d="M300 70 C300 45 305 25 300 0"/>
-          <path d="M380 85 C390 55 410 35 425 5"/>
-          <path d="M220 215 C210 245 190 265 175 295"/>
-          <path d="M300 230 C300 255 295 275 300 300"/>
-          <path d="M380 215 C390 245 410 265 425 295"/>
-        </g>
+      <g class="eye__veins" fill="none" stroke="#8a0000" stroke-linecap="round">
+        <path stroke-width="3" d="M10 130 C-10 125 -30 105 -52 80"/>
+        <path stroke-width="2" d="M-22 112 C-30 95 -34 78 -34 58"/>
+        <path stroke-width="3" d="M390 130 C410 125 430 105 452 80"/>
+        <path stroke-width="2" d="M422 112 C430 95 434 78 434 58"/>
+        <path stroke-width="3" d="M10 130 C-10 140 -30 160 -52 185"/>
+        <path stroke-width="3" d="M390 130 C410 140 430 160 452 185"/>
+        <path stroke-width="2.5" d="M120 62 C100 35 70 15 30 -5"/>
+        <path stroke-width="2" d="M70 42 C60 20 60 5 66 -22"/>
+        <path stroke-width="2.5" d="M280 62 C300 35 330 15 370 -5"/>
+        <path stroke-width="2" d="M330 42 C340 20 340 5 334 -22"/>
+        <path stroke-width="2.5" d="M130 200 C110 225 85 245 50 265"/>
+        <path stroke-width="2.5" d="M270 200 C290 225 315 245 350 265"/>
+        <path stroke-width="2" d="M200 46 C198 20 205 0 200 -25"/>
+        <path stroke-width="2" d="M200 214 C204 240 196 262 202 285"/>
+      </g>
 
-        <!-- Сам глаз (моргает) -->
-        <g class="eye__blink">
-          <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z" fill="none" stroke="#ff1f1f" stroke-width="16" opacity=".18"/>
-          <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z" fill="url(#scleraG)"/>
-
-          <g clip-path="url(#eyeClip)">
-            <g class="eye__iris">
-              <circle cx="300" cy="150" r="80" fill="url(#irisG)"/>
-              <circle cx="300" cy="150" r="58" fill="none" stroke="#ff8a70" stroke-width="44" stroke-dasharray="1.5 6.5" opacity=".28"/>
-              <circle cx="300" cy="150" r="62" fill="none" stroke="#300000" stroke-width="36" stroke-dasharray="2 9" opacity=".35"/>
-              <circle cx="300" cy="150" r="34" fill="none" stroke="#ff9a8a" stroke-width="1.5" opacity=".4"/>
-              <circle cx="300" cy="150" r="79" fill="none" stroke="#2a0000" stroke-width="4"/>
-            </g>
-            <ellipse class="eye__pupil" cx="300" cy="150" rx="11" ry="64" fill="#000"/>
-            <ellipse cx="268" cy="108" rx="14" ry="7" fill="#fff" opacity=".35" transform="rotate(-30 268 108)"/>
-            <rect x="90" y="60" width="420" height="180" fill="url(#lidShade)"/>
+      <g class="eye__ball">
+        <path d="M10 130 Q200 -40 390 130 Q200 300 10 130Z" fill="url(#gSclera)" stroke="#c40000" stroke-width="3.5"/>
+        <g clip-path="url(#eyeClip)">
+          <g class="eye__iris">
+            <circle cx="200" cy="130" r="84" fill="url(#gIris)"/>
+            <circle cx="200" cy="130" r="58" fill="none" stroke="#ff9a8a" stroke-opacity=".45" stroke-width="46" stroke-dasharray="1.6 7.4"/>
+            <circle cx="200" cy="130" r="40" fill="none" stroke="#7a0000" stroke-opacity=".5" stroke-width="30" stroke-dasharray="1.2 5"/>
+            <circle cx="200" cy="130" r="83" fill="none" stroke="#2a0000" stroke-width="4"/>
           </g>
-
-          <path d="M90 150 Q300 -10 510 150 Q300 310 90 150 Z" fill="none" stroke="#ff2a2a" stroke-width="3"/>
+          <ellipse class="eye__pupil" cx="200" cy="130" rx="11" ry="76" fill="#000"/>
+          <ellipse cx="170" cy="92" rx="14" ry="8" fill="#fff" opacity=".55" transform="rotate(-30 170 92)"/>
+          <circle cx="232" cy="165" r="4.5" fill="#fff" opacity=".4"/>
         </g>
-      </svg>
-    </div>
+      </g>
 
-    <!-- Искры и виньетка (только для гуля) -->
-    <div class="bg__embers"></div>
-    <div class="bg__vig"></div>
-
-    <!-- Такидзава с белыми волосами (виден только в теме «Такидзава») -->
-    <div class="bg__tk">
-      <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="tkHairG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#ffffff"/>
-            <stop offset="1" stop-color="#cfd0ea"/>
-          </linearGradient>
-          <linearGradient id="tkSkinG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#e4d9ee"/>
-            <stop offset="1" stop-color="#a999bb"/>
-          </linearGradient>
-        </defs>
-
-        <g class="tk__body">
-          <!-- Плечи и пальто -->
-          <path d="M0 500 L0 445 C20 405 90 385 168 368 L200 400 L232 368 C310 385 380 405 400 445 L400 500 Z" fill="#0d0714" stroke="#b388ff" stroke-width="2" stroke-opacity=".5"/>
-          <!-- Шея -->
-          <path d="M172 295 L228 295 L234 375 L200 402 L166 375 Z" fill="#8f819f"/>
-          <path d="M172 295 L228 295 L226 335 Q200 350 174 335 Z" fill="#000" opacity=".25"/>
-          <!-- Воротник -->
-          <path d="M150 350 L200 408 L108 434 L96 392 Z" fill="#150a22" stroke="#b388ff" stroke-width="2" stroke-opacity=".6"/>
-          <path d="M250 350 L200 408 L292 434 L304 392 Z" fill="#150a22" stroke="#b388ff" stroke-width="2" stroke-opacity=".6"/>
-
-          <!-- Лицо -->
-          <path d="M130 190 C130 130 165 100 200 100 C235 100 270 130 270 190 C270 250 240 305 200 320 C160 305 130 250 130 190 Z" fill="url(#tkSkinG)"/>
-          <!-- Тень под скулами -->
-          <path d="M138 235 C150 285 175 312 200 320 C225 312 250 285 262 235 C250 270 225 300 200 304 C175 300 150 270 138 235 Z" fill="#000" opacity=".18"/>
-          <!-- Тень на лбу от чёлки -->
-          <ellipse cx="200" cy="168" rx="68" ry="26" fill="#000" opacity=".22"/>
-
-          <!-- Левый глаз (обычный) -->
-          <path d="M148 208 Q170 194 192 208 Q170 218 148 208 Z" fill="#f6f0fa"/>
-          <circle cx="170" cy="207" r="7" fill="#2a1a3a"/>
-          <circle cx="170" cy="207" r="3" fill="#000"/>
-          <circle cx="173" cy="204" r="1.8" fill="#fff"/>
-          <path d="M144 193 L194 201" stroke="#2a1a3a" stroke-width="5" stroke-linecap="round"/>
-
-          <!-- Правый глаз (гуль) -->
-          <path d="M208 208 Q230 194 252 208 Q230 218 208 208 Z" fill="#050005"/>
-          <g class="tk__kakugan">
-            <circle cx="230" cy="207" r="8" fill="#ff2040"/>
-            <ellipse cx="230" cy="207" rx="2.2" ry="7" fill="#000"/>
-          </g>
-          <path d="M206 201 L256 193" stroke="#2a1a3a" stroke-width="5" stroke-linecap="round"/>
-          <!-- Линии под глазом гуля -->
-          <path d="M214 220 L226 232 M232 221 L242 230" stroke="#ff2040" stroke-width="1.5" stroke-linecap="round" opacity=".7"/>
-
-          <!-- Шрам над левым глазом -->
-          <path d="M158 178 L176 226" stroke="#8a3a5a" stroke-width="3" stroke-linecap="round"/>
-          <path d="M155 190 L165 188 M158 202 L168 199 M162 214 L172 211" stroke="#8a3a5a" stroke-width="2" stroke-linecap="round"/>
-
-          <!-- Нос и рот -->
-          <path d="M200 216 L195 246 L205 248" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M180 281 Q200 287 222 278" fill="none" stroke="#4a2a4a" stroke-width="3" stroke-linecap="round"/>
-
-          <!-- Стежки на щеке -->
-          <path d="M243 240 L264 256" stroke="#5a3a5a" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M246 252 L252 244 M252 258 L258 250 M258 264 L264 256" stroke="#5a3a5a" stroke-width="2" stroke-linecap="round"/>
-        </g>
-
-        <!-- Белые волосы -->
-        <g class="tk__hair">
-          <path d="M118 215 C105 150 120 95 160 70 L150 40 L180 62 L200 25 L220 62 L252 38 L242 72 C285 95 298 150 282 215 C275 175 262 150 245 135 L225 178 L205 128 L185 175 L165 135 C145 152 128 178 118 215 Z" fill="url(#tkHairG)" stroke="#9a96b8" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M200 40 L198 110 M170 70 L178 125 M232 72 L224 125 M148 100 L158 150 M254 100 L244 150" stroke="#9a96b8" stroke-width="1.8" stroke-linecap="round" opacity=".7" fill="none"/>
-        </g>
-      </svg>
-    </div>
+      <path d="M-5 120 Q200 -75 405 120" fill="none" stroke="#3a0000" stroke-width="5" opacity=".8"/>
+      <path class="eye__drip" d="M147 205 h6 v36 a3 3 0 0 1 -6 0Z" fill="#b00000"/>
+    </svg>
   </div>
 
-  <main class="app">
+  <div class="bg__vig"></div>
 
-    <!-- ВКЛАДКА: РАСПИСАНИЕ -->
-    <section class="view is-active" id="view-schedule">
-      <header class="head">
-        <h1>Расписание</h1>
-        <p>Во сколько начинается первый урок?</p>
-      </header>
+  <!-- ГУЛЬ: левая сторона -->
+  <div class="bg__side bg__side--l">
+    <svg class="side__chain" viewBox="0 0 60 330" xmlns="http://www.w3.org/2000/svg">
+      <g class="chain__g" fill="none" stroke="#9c2a33" stroke-width="5">
+        <ellipse cx="30" cy="16" rx="10" ry="16"/>
+        <line x1="30" y1="34" x2="30" y2="62" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="80" rx="10" ry="16"/>
+        <line x1="30" y1="98" x2="30" y2="126" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="144" rx="10" ry="16"/>
+        <line x1="30" y1="162" x2="30" y2="190" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="208" rx="10" ry="16"/>
+        <line x1="30" y1="226" x2="30" y2="254" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="272" rx="10" ry="16"/>
+        <path d="M22 288 L38 288 L30 326Z" fill="#8a0010" stroke="none"/>
+      </g>
+    </svg>
+    <svg class="side__kagune" viewBox="0 0 120 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gK" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#2a0004"/>
+          <stop offset=".6" stop-color="#a30012"/>
+          <stop offset="1" stop-color="#ff3a3a"/>
+        </linearGradient>
+      </defs>
+      <path class="k k1" d="M0 300 C8 210 40 120 100 30 C72 120 62 210 72 300Z" fill="url(#gK)" stroke="#ff4d4d" stroke-width="1.2"/>
+      <path class="k k2" d="M28 300 C44 230 72 180 114 138 C96 190 96 245 106 300Z" fill="url(#gK)" stroke="#ff4d4d" stroke-width="1.2"/>
+      <path class="k k3" d="M0 300 C0 250 8 200 26 150 C26 205 36 255 42 300Z" fill="url(#gK)" stroke="#ff4d4d" stroke-width="1.2"/>
+    </svg>
+  </div>
 
-      <div class="chips" id="timeButtons"></div>
+  <!-- ГУЛЬ: правая сторона -->
+  <div class="bg__side bg__side--r">
+    <svg class="side__chain" viewBox="0 0 60 330" xmlns="http://www.w3.org/2000/svg">
+      <g class="chain__g" fill="none" stroke="#9c2a33" stroke-width="5">
+        <ellipse cx="30" cy="16" rx="10" ry="16"/>
+        <line x1="30" y1="34" x2="30" y2="62" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="80" rx="10" ry="16"/>
+        <line x1="30" y1="98" x2="30" y2="126" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="144" rx="10" ry="16"/>
+        <line x1="30" y1="162" x2="30" y2="190" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="208" rx="10" ry="16"/>
+        <line x1="30" y1="226" x2="30" y2="254" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="30" cy="272" rx="10" ry="16"/>
+        <path d="M22 288 L38 288 L30 326Z" fill="#8a0010" stroke="none"/>
+      </g>
+    </svg>
+    <svg class="side__kagune" viewBox="0 0 120 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gK2" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#2a0004"/>
+          <stop offset=".6" stop-color="#a30012"/>
+          <stop offset="1" stop-color="#ff3a3a"/>
+        </linearGradient>
+      </defs>
+      <path class="k k1" d="M0 300 C8 210 40 120 100 30 C72 120 62 210 72 300Z" fill="url(#gK2)" stroke="#ff4d4d" stroke-width="1.2"/>
+      <path class="k k2" d="M28 300 C44 230 72 180 114 138 C96 190 96 245 106 300Z" fill="url(#gK2)" stroke="#ff4d4d" stroke-width="1.2"/>
+      <path class="k k3" d="M0 300 C0 250 8 200 26 150 C26 205 36 255 42 300Z" fill="url(#gK2)" stroke="#ff4d4d" stroke-width="1.2"/>
+    </svg>
+  </div>
 
-      <form class="addform" id="addTimeForm" hidden>
-        <input type="time" id="customTimeInput" required>
-        <button type="submit" class="btn btn--accent">Добавить</button>
-        <button type="button" class="btn" id="customTimeCancel">Отмена</button>
-      </form>
+  <div class="bg__kanji bg__kanji--l">東京</div>
+  <div class="bg__kanji bg__kanji--r">喰種</div>
+  <div class="bg__embers"></div>
 
-      <div class="card status" id="statusCard" data-state="wait">
-        <div class="status__top">
-          <span class="status__label" id="statusLabel">Загрузка…</span>
-          <span class="status__clock" id="clock">--:--:--</span>
-        </div>
-        <div class="status__count" id="countdown">--:--</div>
-        <div class="status__caption" id="caption"></div>
-        <div class="progress" id="progress"><div class="progress__fill" id="progressFill"></div></div>
-        <div class="status__next" id="nextText"></div>
+  <!-- ТАКИДЗАВА -->
+  <div class="bg__tk">
+    <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gKk" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#ff7a7a"/>
+          <stop offset=".6" stop-color="#e0102a"/>
+          <stop offset="1" stop-color="#600"/>
+        </radialGradient>
+      </defs>
+      <path d="M30 500 L70 405 Q200 450 330 405 L370 500Z" fill="#17101f"/>
+      <path d="M120 392 L200 440 L280 392 L262 372 L200 410 L138 372Z" fill="#241a33" stroke="#3a2c52" stroke-width="3"/>
+      <path d="M160 330 L160 395 Q200 425 240 395 L240 330Z" fill="#d8c0bd"/>
+      <path d="M160 370 Q200 395 240 370 L240 330 L160 330Z" fill="#000" opacity=".12"/>
+      <path d="M108 190 C108 300 150 372 200 378 C250 372 292 300 292 190 C292 120 250 96 200 96 C150 96 108 120 108 190Z" fill="#e8d3cf"/>
+      <path d="M138 205 L182 214" stroke="#cfc9e6" stroke-width="5" stroke-linecap="round"/>
+      <path d="M262 205 L218 214" stroke="#cfc9e6" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="160" cy="232" rx="20" ry="11" fill="#fff"/>
+      <circle cx="160" cy="232" r="8" fill="#3b2a52"/>
+      <circle cx="160" cy="232" r="3.5" fill="#000"/>
+      <ellipse cx="240" cy="232" rx="21" ry="12" fill="#000"/>
+      <g class="tk__kakugan">
+        <circle cx="240" cy="232" r="9.5" fill="url(#gKk)"/>
+        <ellipse cx="240" cy="232" rx="2" ry="8" fill="#000"/>
+      </g>
+      <path d="M262 232 l12 -6 M262 237 l12 4 M218 238 l-8 6" stroke="#7a0000" stroke-width="2" stroke-linecap="round"/>
+      <path d="M132 190 L190 210" stroke="#b86a7a" stroke-width="4" stroke-linecap="round"/>
+      <path d="M144 184 v14 M157 189 v14 M170 194 v14 M183 199 v14" stroke="#5a2a3a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M125 285 Q150 300 172 296" stroke="#b86a7a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <path d="M135 280 l6 14 M147 286 l5 14 M159 291 l4 13" stroke="#5a2a3a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M200 245 L194 285 Q200 292 208 285" stroke="#b79a97" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M168 322 Q200 338 238 318" stroke="#7a3c4a" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <g class="tk__hair">
+        <path d="M92 250 C60 175 70 100 130 70 L122 22 L168 56 L200 8 L232 56 L278 22 L270 70 C330 100 340 175 308 250 C312 205 300 168 280 150 L262 176 L226 138 L200 178 L174 138 L138 176 L120 150 C100 168 88 205 92 250Z" fill="#f7f5ff" stroke="#c8c2e4" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M150 74 L160 34 M200 62 L204 16 M250 74 L242 34" stroke="#c8c2e4" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<main class="app">
+
+  <section class="view is-active" id="view-schedule" aria-label="Расписание">
+    <h1>Расписание</h1>
+    <p class="sub">Во сколько начинается 1 урок?</p>
+
+    <div class="chips" id="timeButtons"></div>
+
+    <form class="addform" id="addTimeForm" hidden>
+      <input type="time" id="customTimeInput" required aria-label="Своё время">
+      <button class="btn" type="submit">Добавить</button>
+      <button class="btn btn--ghost" type="button" id="customTimeCancel">Отмена</button>
+    </form>
+
+    <section class="card status" id="statusCard" data-mode="before">
+      <div class="status__top">
+        <span class="status__label" id="statusLabel">…</span>
+        <span class="status__clock" id="clock">--:--</span>
       </div>
-
-      <ul class="list" id="scheduleList"></ul>
+      <div class="status__count" id="countdown">--:--</div>
+      <div class="status__caption" id="caption"></div>
+      <div class="progress" id="progress"><div class="progress__fill" id="progressFill"></div></div>
+      <div class="status__next" id="nextText"></div>
     </section>
 
-    <!-- ВКЛАДКА: НАСТРОЙКИ -->
-    <section class="view" id="view-settings">
-      <header class="head">
-        <h1>Настройки</h1>
-        <p>Подстрой всё под свою школу</p>
-      </header>
+    <ol class="list" id="scheduleList"></ol>
+  </section>
 
-      <h2 class="group-title">Длительность</h2>
-      <div class="card group" id="stepperList"></div>
-      <button type="button" class="btn btn--wide" id="resetCfg">Сбросить к стандартным</button>
+  <section class="view" id="view-settings" aria-label="Настройки">
+    <h1>Настройки</h1>
 
-      <h2 class="group-title">Мои времена начала</h2>
-      <div class="card group">
-        <p class="hint" id="customEmpty">Пока пусто. Нажми «+» рядом с кнопками времени на главной.</p>
-        <ul class="custom-list" id="customList"></ul>
+    <h2>Длительности</h2>
+    <div class="card" id="stepperList"></div>
+    <button class="btn btn--ghost wide" type="button" id="resetCfg">Сбросить по умолчанию</button>
+
+    <h2>Свои времена</h2>
+    <div class="card">
+      <p class="hint" id="customEmpty">Пока нет. Нажми «+» рядом с кнопками времени.</p>
+      <ul class="list" id="customList"></ul>
+    </div>
+
+    <h2>Тема</h2>
+    <div class="themes" id="themes"></div>
+
+    <h2>Эффекты</h2>
+    <div class="card switchrow">
+      <div>
+        <div class="switch__t">Анимации на фоне</div>
+        <div class="hint">Выключи, если телефон тормозит</div>
       </div>
+      <button class="switch" id="fxToggle" type="button" role="switch" aria-checked="true" aria-label="Анимации на фоне"></button>
+    </div>
+  </section>
 
-      <h2 class="group-title">Тема</h2>
-      <div class="themes" id="themes"></div>
+</main>
 
-      <h2 class="group-title">Эффекты</h2>
-      <div class="card group">
-        <div class="stepper">
-          <span class="stepper__name">Анимации на фоне<br><small class="hint">Выключи, если телефон тормозит</small></span>
-          <button type="button" class="switch" id="fxToggle" role="switch" aria-checked="true"><span></span></button>
-        </div>
-      </div>
-    </section>
+<nav class="tabbar" id="tabbar">
+  <button class="tab is-active" type="button" data-tab="schedule">Расписание</button>
+  <button class="tab" type="button" data-tab="settings">Настройки</button>
+</nav>
 
-  </main>
-
-  <!-- Нижняя панель -->
-  <nav class="tabbar" id="tabbar">
-    <button type="button" class="tab is-active" data-tab="schedule">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      <span>Расписание</span>
-    </button>
-    <button type="button" class="tab" data-tab="settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
-      <span>Настройки</span>
-    </button>
-  </nav>
-
-  <script src="./script.js"></script>
+<script src="./script.js" defer></script>
 </body>
 </html>

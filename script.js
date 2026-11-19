@@ -1,384 +1,317 @@
 'use strict';
 
-/* ================================================================
-   НАСТРОЙКИ ПО УМОЛЧАНИЮ (их можно менять и прямо в приложении)
-   ================================================================ */
-const START_TIMES     = ['12:10', '12:20', '13:50', '13:10', '14:00', '14:50', '15:00', '11:30'];
-const LESSONS_COUNT   = 6;   // сколько уроков
-const LESSON_MIN      = 40;  // длина урока, минут
-const BREAK_MIN       = 10;  // обычная перемена, минут
-const BIG_BREAK_MIN   = 15;  // большая перемена, минут
-const BIG_BREAK_AFTER = 3;   // большая перемена после этого урока (0 = нет)
+/* ===== Значения по умолчанию (в приложении их можно менять) ===== */
+const LESSONS_COUNT   = 6;   // уроков в день
+const LESSON_MIN      = 40;  // длина урока, мин
+const BREAK_MIN       = 10;  // обычная перемена, мин
+const BIG_BREAK_MIN   = 15;  // большая перемена, мин
+const BIG_BREAK_AFTER = 3;   // после какого урока большая перемена
 const LESSON_NAMES    = [];  // например ['Математика', 'Русский', ...]
-const SWIPE_MIN_PX    = 60;  // насколько надо провести пальцем для свайпа
+const SWIPE_MIN_PX    = 60;
 
-const KEYS = {
-  time:   'raspisanie.time',
-  theme:  'raspisanie.theme',
-  fx:     'raspisanie.fx',
-  cfg:    'raspisanie.cfg',
-  custom: 'raspisanie.custom'
-};
-
-const DEFAULT_CFG = {
-  lessons: LESSONS_COUNT,
-  lessonMin: LESSON_MIN,
-  breakMin: BREAK_MIN,
-  bigBreakMin: BIG_BREAK_MIN,
-  bigBreakAfter: BIG_BREAK_AFTER
-};
-
-const STEPPERS = [
-  { key: 'lessons',       label: 'Количество уроков',    min: 1,  max: 10,  step: 1, unit: '' },
-  { key: 'lessonMin',     label: 'Длина урока',          min: 10, max: 120, step: 5, unit: ' мин' },
-  { key: 'breakMin',      label: 'Перемена',             min: 0,  max: 30,  step: 1, unit: ' мин' },
-  { key: 'bigBreakMin',   label: 'Большая перемена',     min: 0,  max: 60,  step: 1, unit: ' мин' },
-  { key: 'bigBreakAfter', label: 'Большая после урока',  min: 0,  max: 9,   step: 1, unit: '', zeroText: 'нет' }
-];
+const TIMES = ['12:10', '12:20', '13:50', '13:10', '14:00', '14:50', '15:00', '11:30'];
 
 const THEMES = [
-  { id: 'mono',     name: 'Моно',            bg: '#0b0b0d', c: ['#ffffff', '#8e8e96'] },
-  { id: 'neon',     name: 'Неон',            bg: '#07040f', c: ['#ff2bd6', '#19f0ff'] },
-  { id: 'redblue',  name: 'Красно-синяя',    bg: '#080a14', c: ['#ff3b4a', '#3b82ff'] },
-  { id: 'ghoul',    name: 'Токийский гуль',  bg: '#050203', c: ['#ff1f1f', '#2a0000'] },
-  { id: 'takizawa', name: 'Такидзава',       bg: '#07040c', c: ['#b388ff', '#ff4d6d'] },
-  { id: 'chrome',   name: 'Хром',            bg: '#0e1013', c: ['#d7e0ea', '#7f8c9a'] },
-  { id: 'cyber',    name: 'Киберпанк',       bg: '#0a0a05', c: ['#fcee0a', '#00f0ff'] },
-  { id: 'forest',   name: 'Лес',             bg: '#06100a', c: ['#5be37d', '#c8e66a'] },
-  { id: 'sunset',   name: 'Закат',           bg: '#1a0b1f', c: ['#ff8a4c', '#ff4d8d'] },
-  { id: 'space',    name: 'Космос',          bg: '#04030d', c: ['#8f8bff', '#5ee0ff'] }
+  { id: 'mono',     name: 'Моно',           bg: '#0b0b0d', c: ['#f5f5f7', '#8e8e93'] },
+  { id: 'neon',     name: 'Неон',           bg: '#07000f', c: ['#00f0ff', '#ff00e5'] },
+  { id: 'redblue',  name: 'Красно-синяя',   bg: '#07070f', c: ['#ff3b4e', '#3b82ff'] },
+  { id: 'ghoul',    name: 'Токийский гуль', bg: '#060101', c: ['#ff1f2d', '#8a0010'] },
+  { id: 'takizawa', name: 'Такидзава',      bg: '#07040c', c: ['#b388ff', '#ff4d6d'] },
+  { id: 'chrome',   name: 'Хром',           bg: '#0e1014', c: ['#cfd6e4', '#7e8aa3'] },
+  { id: 'cyber',    name: 'Киберпанк',      bg: '#05090a', c: ['#fcee0a', '#00f0ff'] },
+  { id: 'forest',   name: 'Лес',            bg: '#041009', c: ['#5be37d', '#1b9e77'] },
+  { id: 'sunset',   name: 'Закат',          bg: '#14070c', c: ['#ff9a4d', '#ff3d77'] },
+  { id: 'space',    name: 'Космос',         bg: '#04030f', c: ['#8f9bff', '#c26bff'] }
 ];
 
-const TABS = ['schedule', 'settings'];
+const K = {
+  time: 'raspisanie.time', theme: 'raspisanie.theme', fx: 'raspisanie.fx',
+  cfg: 'raspisanie.cfg', custom: 'raspisanie.custom'
+};
 
-/* ================================================================
-   ВСПОМОГАТЕЛЬНОЕ
-   ================================================================ */
+const DEF = { lessons: LESSONS_COUNT, lesson: LESSON_MIN, brk: BREAK_MIN, big: BIG_BREAK_MIN, bigAfter: BIG_BREAK_AFTER };
+const LIM = { lessons: [1, 10, 1], lesson: [20, 90, 5], brk: [0, 30, 1], big: [0, 45, 1], bigAfter: [1, 9, 1] };
+const NAMES = {
+  lessons: 'Уроков в день', lesson: 'Длина урока, мин', brk: 'Перемена, мин',
+  big: 'Большая перемена, мин', bigAfter: 'Большая после урока №'
+};
+
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, '0');
-
-function loadRaw(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
-function saveRaw(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
-function loadJSON(key, fallback) {
-  try {
-    const v = localStorage.getItem(key);
-    return v === null ? fallback : JSON.parse(v);
-  } catch (e) { return fallback; }
-}
-function saveJSON(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
-
-function parseHM(s) {
-  const p = s.split(':').map(Number);
-  return p[0] * 3600 + p[1] * 60;
-}
-function fmtHM(sec) {
-  sec = ((Math.round(sec) % 86400) + 86400) % 86400;
-  return pad(Math.floor(sec / 3600)) + ':' + pad(Math.floor((sec % 3600) / 60));
-}
-function fmtCount(sec) {
-  sec = Math.max(0, Math.ceil(sec));
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
-  return h > 0 ? h + ':' + pad(m) + ':' + pad(s) : pad(m) + ':' + pad(s);
-}
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
-function setText(el, text) { if (el.textContent !== text) el.textContent = text; }
-
-/* ================================================================
-   СОСТОЯНИЕ
-   ================================================================ */
-const state = {
-  time: START_TIMES[0],
-  theme: 'mono',
-  tab: 'schedule',
-  custom: [],
-  cfg: Object.assign({}, DEFAULT_CFG)
+const toMin = t => { const p = t.split(':'); return +p[0] * 60 + +p[1]; };
+const fmt = m => pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60);
+const fmtDur = s => {
+  s = Math.max(0, s);
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(x);
 };
-let schedule = [];
-let lastKey = '';
+const lessonName = n => LESSON_NAMES[n - 1] || n + ' урок';
 
-function sanitizeCfg(raw) {
-  const out = Object.assign({}, DEFAULT_CFG);
-  if (raw && typeof raw === 'object') {
-    STEPPERS.forEach(s => {
-      const v = Number(raw[s.key]);
-      if (Number.isFinite(v)) out[s.key] = Math.min(s.max, Math.max(s.min, Math.round(v)));
-    });
+/* ===== Хранилище ===== */
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+const clean = v => (v == null ? null : String(v).replace(/"/g, ''));
+function loadJson(k, fb) { try { const v = JSON.parse(ls.get(k)); return v == null ? fb : v; } catch (e) { return fb; } }
+
+function loadCfg() {
+  const s = loadJson(K.cfg, {}), o = {};
+  Object.keys(DEF).forEach(k => {
+    const v = Number(s && s[k]);
+    o[k] = (s && s[k] != null && Number.isFinite(v)) ? Math.min(LIM[k][1], Math.max(LIM[k][0], Math.round(v))) : DEF[k];
+  });
+  return o;
+}
+function loadCustom() {
+  const a = loadJson(K.custom, []);
+  return Array.isArray(a) ? a.filter(t => /^\d{2}:\d{2}$/.test(t)) : [];
+}
+
+/* ===== Состояние ===== */
+const state = { cfg: loadCfg(), custom: loadCustom(), time: TIMES[0], theme: 'mono', plan: [], fxPref: null };
+const allTimes = () => TIMES.concat(state.custom.filter(t => !TIMES.includes(t)));
+
+(function initState() {
+  const t = clean(ls.get(K.time));
+  if (t && /^\d{1,2}:\d{2}$/.test(t)) {
+    const n = fmt(toMin(t));
+    if (allTimes().includes(n)) state.time = n;
   }
-  return out;
-}
+  const th = clean(ls.get(K.theme));
+  if (THEMES.some(x => x.id === th)) state.theme = th;
+  const fx = clean(ls.get(K.fx));
+  if (fx != null) state.fxPref = !(fx === 'off' || fx === '0' || fx === 'lite' || fx === 'false');
+})();
 
-function allTimes() {
-  return START_TIMES.concat(state.custom.filter(t => !START_TIMES.includes(t)));
-}
-
-/* ================================================================
-   РАСПИСАНИЕ
-   ================================================================ */
-function lessonName(n) { return LESSON_NAMES[n - 1] || (n + ' урок'); }
-function segName(seg) {
-  if (seg.type === 'lesson') return lessonName(seg.n);
-  return seg.big ? 'Большая перемена' : 'Перемена';
-}
-
-function buildSchedule() {
-  const c = state.cfg;
-  const out = [];
-  let t = parseHM(state.time);
+/* ===== План дня ===== */
+function buildPlan() {
+  const c = state.cfg, out = [];
+  let t = toMin(state.time);
   for (let i = 1; i <= c.lessons; i++) {
-    out.push({ type: 'lesson', n: i, start: t, end: t + c.lessonMin * 60 });
-    t += c.lessonMin * 60;
+    out.push({ type: 'lesson', n: i, start: t, end: t + c.lesson });
+    t += c.lesson;
     if (i < c.lessons) {
-      const big = c.bigBreakAfter === i;
-      const len = big ? c.bigBreakMin : c.breakMin;
-      if (len > 0) {
-        out.push({ type: 'break', n: i, big: big, start: t, end: t + len * 60 });
-        t += len * 60;
-      }
+      const b = i === c.bigAfter ? c.big : c.brk;
+      if (b > 0) { out.push({ type: 'break', n: i, start: t, end: t + b }); t += b; }
     }
   }
-  return out;
+  state.plan = out;
 }
 
+/* ===== Рендер расписания ===== */
 function renderSchedule() {
-  $('scheduleList').innerHTML = schedule.map((s, i) => {
-    const dur = Math.round((s.end - s.start) / 60) + ' мин';
-    return '<li class="row row--' + s.type + '" data-i="' + i + '">' +
-      '<span class="row__time">' + fmtHM(s.start) + '–' + fmtHM(s.end) + '</span>' +
-      '<span class="row__name">' + esc(segName(s)) + '</span>' +
-      '<span class="row__dur">' + dur + '</span></li>';
-  }).join('');
-}
-
-function rebuild() {
-  schedule = buildSchedule();
-  renderSchedule();
-  lastKey = '';
-  tick();
-}
-
-function tick() {
-  if (!schedule.length) return;
-  const d = new Date();
-  const now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000;
-  setText($('clock'), pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()));
-
-  const first = schedule[0];
-  const last = schedule[schedule.length - 1];
-  let mode, idx = -1;
-
-  if (now < first.start) {
-    mode = 'wait';
-  } else if (now >= last.end) {
-    mode = 'done';
-  } else {
-    idx = schedule.findIndex(s => now >= s.start && now < s.end);
-    mode = idx >= 0 ? schedule[idx].type : 'wait';
-  }
-
-  let label, count, caption, next, progress = 0;
-
-  if (mode === 'wait') {
-    label = 'Скоро уроки';
-    count = fmtCount(first.start - now);
-    caption = 'до начала ' + lessonName(1);
-    next = 'Дальше: ' + lessonName(1) + ' в ' + fmtHM(first.start);
-  } else if (mode === 'done') {
-    label = 'Уроки закончились';
-    count = '00:00';
-    caption = 'Можно отдыхать 🎉';
-    next = 'Завтра начало в ' + fmtHM(first.start);
-    progress = 1;
-  } else {
-    const seg = schedule[idx];
-    const nxt = schedule[idx + 1];
-    label = segName(seg);
-    count = fmtCount(seg.end - now);
-    caption = seg.type === 'lesson' ? 'до конца урока' : 'до конца перемены';
-    next = nxt
-      ? 'Дальше: ' + segName(nxt) + ' в ' + fmtHM(nxt.start)
-      : 'Дальше: конец уроков в ' + fmtHM(seg.end);
-    progress = (now - seg.start) / (seg.end - seg.start);
-  }
-
-  $('statusCard').dataset.state = mode;
-  setText($('statusLabel'), label);
-  setText($('countdown'), count);
-  setText($('caption'), caption);
-  setText($('nextText'), next);
-  $('progressFill').style.transform = 'scaleX(' + Math.min(1, Math.max(0, progress)).toFixed(4) + ')';
-
-  const key = mode + ':' + idx;
-  if (key !== lastKey) {
-    lastKey = key;
-    const rows = $('scheduleList').children;
-    for (let i = 0; i < rows.length; i++) {
-      rows[i].classList.toggle('is-current', i === idx);
-      rows[i].classList.toggle('is-past', mode === 'done' || (idx >= 0 && i < idx));
-    }
-  }
-}
-
-/* ================================================================
-   ВРЕМЯ НАЧАЛА: КНОПКИ, «+», СВОИ ВРЕМЕНА
-   ================================================================ */
-function renderTimes() {
-  $('timeButtons').innerHTML = allTimes().map(t =>
-    '<button type="button" class="chip' + (t === state.time ? ' is-active' : '') + '" data-time="' + t + '">' + t + '</button>'
-  ).join('') +
-  '<button type="button" class="chip chip--add" id="addTimeBtn" aria-label="Добавить своё время">+</button>';
-}
-
-function renderCustom() {
-  $('customEmpty').hidden = state.custom.length > 0;
-  $('customList').innerHTML = state.custom.map(t =>
-    '<li class="custom-item"><span>' + t + '</span>' +
-    '<button type="button" class="x" data-del="' + t + '" aria-label="Удалить ' + t + '">×</button></li>'
-  ).join('');
-}
-
-function setTime(t) {
-  state.time = t;
-  saveRaw(KEYS.time, t);
-  renderTimes();
-  rebuild();
-}
-
-/* ================================================================
-   СЧЁТЧИКИ (длины уроков и перемен)
-   ================================================================ */
-function renderSteppers() {
-  $('stepperList').innerHTML = STEPPERS.map(s =>
-    '<div class="stepper"><span class="stepper__name">' + s.label + '</span>' +
-    '<div class="stepper__ctl">' +
-    '<button type="button" class="round" data-key="' + s.key + '" data-dir="-1" aria-label="Меньше">−</button>' +
-    '<span class="stepper__val" id="val-' + s.key + '"></span>' +
-    '<button type="button" class="round" data-key="' + s.key + '" data-dir="1" aria-label="Больше">+</button>' +
-    '</div></div>'
-  ).join('');
-  updateSteppers();
-}
-
-function updateSteppers() {
-  STEPPERS.forEach(s => {
-    const v = state.cfg[s.key];
-    $('val-' + s.key).textContent = (s.zeroText && v === 0) ? s.zeroText : v + s.unit;
+  const ol = $('scheduleList');
+  ol.innerHTML = '';
+  state.plan.forEach(s => {
+    const li = document.createElement('li');
+    li.className = 'row' + (s.type === 'break' ? ' row--break' : '');
+    const a = document.createElement('span');
+    a.className = 'row__name';
+    a.textContent = s.type === 'lesson' ? lessonName(s.n) : 'Перемена · ' + (s.end - s.start) + ' мин';
+    const b = document.createElement('span');
+    b.className = 'row__time';
+    b.textContent = fmt(s.start) + ' – ' + fmt(s.end);
+    li.append(a, b);
+    ol.appendChild(li);
   });
 }
 
-/* ================================================================
-   ТЕМЫ
-   ================================================================ */
-function renderThemes() {
-  $('themes').innerHTML = THEMES.map(t =>
-    '<button type="button" class="theme" data-id="' + t.id + '">' +
-    '<span class="theme__sw" style="background:linear-gradient(135deg,' + t.c[0] + ',' + t.c[1] + ')"></span>' +
-    '<span>' + t.name + '</span></button>'
-  ).join('');
-}
+function render() {
+  const now = new Date();
+  const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const p = state.plan;
+  const first = p[0].start * 60, last = p[p.length - 1].end * 60;
+  let mode, label, count, cap, frac = 0, next = '', idx = -1;
 
-function applyTheme(id) {
-  const th = THEMES.find(t => t.id === id) || THEMES[0];
-  state.theme = th.id;
-  document.documentElement.dataset.theme = th.id;
-  $('metaTheme').setAttribute('content', th.bg);
-  const btns = $('themes').children;
-  for (let i = 0; i < btns.length; i++) {
-    btns[i].classList.toggle('is-active', btns[i].dataset.id === th.id);
+  if (sec < first) {
+    mode = 'before'; label = 'До уроков'; count = fmtDur(first - sec);
+    cap = 'до начала 1 урока'; next = 'Первый урок в ' + fmt(p[0].start);
+  } else if (sec >= last) {
+    mode = 'after'; label = 'Всё'; count = '00:00';
+    cap = 'Уроки закончились'; frac = 1; next = 'Хорошего вечера!';
+  } else {
+    idx = p.findIndex(s => sec >= s.start * 60 && sec < s.end * 60);
+    const s = p[idx];
+    mode = s.type;
+    label = s.type === 'lesson' ? lessonName(s.n) : 'Перемена';
+    count = fmtDur(s.end * 60 - sec);
+    cap = s.type === 'lesson' ? 'до конца урока' : 'до конца перемены';
+    frac = (sec - s.start * 60) / ((s.end - s.start) * 60);
+    const n = p[idx + 1];
+    next = !n ? 'Дальше: конец уроков в ' + fmt(s.end)
+      : n.type === 'lesson' ? 'Дальше: ' + lessonName(n.n) + ' в ' + fmt(n.start)
+      : 'Дальше: перемена ' + (n.end - n.start) + ' мин';
   }
-  saveRaw(KEYS.theme, th.id);
+
+  $('statusCard').dataset.mode = mode;
+  $('statusLabel').textContent = label;
+  $('clock').textContent = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  $('countdown').textContent = count;
+  $('caption').textContent = cap;
+  $('progressFill').style.transform = 'scaleX(' + Math.min(1, Math.max(0, frac)).toFixed(4) + ')';
+  $('nextText').textContent = next;
+
+  const rows = $('scheduleList').children;
+  for (let i = 0; i < rows.length; i++) {
+    rows[i].classList.toggle('is-current', i === idx);
+    rows[i].classList.toggle('is-done', mode === 'after' || (idx >= 0 && i < idx));
+  }
 }
 
-/* ================================================================
-   ЭФФЕКТЫ / ЛЕГКИЙ РЕЖИМ
-   ================================================================ */
-function setLite(lite, persist) {
+/* ===== Кнопки времени ===== */
+function renderChips() {
+  const box = $('timeButtons');
+  box.innerHTML = '';
+  allTimes().forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip' + (t === state.time ? ' is-active' : '');
+    b.dataset.time = t;
+    b.textContent = t;
+    box.appendChild(b);
+  });
+  const add = document.createElement('button');
+  add.type = 'button';
+  add.className = 'chip chip--add';
+  add.textContent = '+';
+  add.setAttribute('aria-label', 'Добавить своё время');
+  box.appendChild(add);
+}
+
+function selectTime(t) {
+  state.time = t;
+  ls.set(K.time, t);
+  buildPlan(); renderChips(); renderSchedule(); render();
+}
+
+/* ===== Настройки: длительности ===== */
+function renderSteppers() {
+  const box = $('stepperList');
+  box.innerHTML = '';
+  Object.keys(LIM).forEach(k => {
+    const row = document.createElement('div');
+    row.className = 'step';
+    row.innerHTML = '<span class="step__name"></span><div class="step__ctl">' +
+      '<button type="button" data-k="' + k + '" data-d="-1" aria-label="Меньше">−</button><output></output>' +
+      '<button type="button" data-k="' + k + '" data-d="1" aria-label="Больше">+</button></div>';
+    row.querySelector('.step__name').textContent = NAMES[k];
+    row.querySelector('output').textContent = state.cfg[k];
+    box.appendChild(row);
+  });
+}
+
+function saveCfg() {
+  ls.set(K.cfg, JSON.stringify(state.cfg));
+  buildPlan(); renderSteppers(); renderSchedule(); render();
+}
+
+/* ===== Настройки: свои времена ===== */
+function renderCustom() {
+  const ul = $('customList');
+  ul.innerHTML = '';
+  $('customEmpty').hidden = state.custom.length > 0;
+  state.custom.forEach(t => {
+    const li = document.createElement('li');
+    li.className = 'row';
+    const s = document.createElement('span');
+    s.textContent = t;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'mini'; b.dataset.del = t; b.textContent = 'Удалить';
+    li.append(s, b);
+    ul.appendChild(li);
+  });
+}
+
+/* ===== Темы ===== */
+function renderThemes() {
+  const box = $('themes');
+  box.innerHTML = '';
+  THEMES.forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'theme';
+    b.dataset.id = t.id;
+    const d = document.createElement('span');
+    d.className = 'theme__dot';
+    d.style.background = 'linear-gradient(135deg,' + t.c[0] + ',' + t.c[1] + ')';
+    const n = document.createElement('span');
+    n.textContent = t.name;
+    b.append(d, n);
+    box.appendChild(b);
+  });
+}
+
+function applyTheme(id, save) {
+  const t = THEMES.find(x => x.id === id) || THEMES[0];
+  state.theme = t.id;
+  document.documentElement.dataset.theme = t.id;
+  $('metaTheme').setAttribute('content', t.bg);
+  if (save) ls.set(K.theme, t.id);
+  document.querySelectorAll('.theme').forEach(b => b.classList.toggle('is-active', b.dataset.id === t.id));
+}
+
+/* ===== Лёгкий режим ===== */
+function setLite(lite) {
   document.documentElement.classList.toggle('lite', lite);
   $('fxToggle').setAttribute('aria-checked', String(!lite));
-  if (persist) saveRaw(KEYS.fx, lite ? 'off' : 'on');
 }
 
 function detectWeak() {
-  const n = navigator;
-  const lowMem = n.deviceMemory && n.deviceMemory <= 2;
-  const lowCpu = n.hardwareConcurrency && n.hardwareConcurrency <= 2;
+  const mem = navigator.deviceMemory, cores = navigator.hardwareConcurrency;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return !!(lowMem || lowCpu || reduce);
+  return reduce || (mem && mem <= 2) || (cores && cores <= 3);
 }
 
-function measureFps(cb) {
-  let frames = 0;
+function measureFps() {
+  let n = 0;
   const t0 = performance.now();
   function f(t) {
-    if (document.hidden) return;           // вкладка свёрнута — замер не считаем
-    frames++;
+    n++;
     if (t - t0 < 1500) requestAnimationFrame(f);
-    else cb(frames / ((t - t0) / 1000));
+    else if (n * 1000 / (t - t0) < 35 && state.fxPref === null) setLite(true);
   }
   requestAnimationFrame(f);
 }
 
-function initFx() {
-  const saved = loadRaw(KEYS.fx);
-  if (saved === 'on' || saved === 'off') {
-    setLite(saved === 'off', false);
-    return;
+/* ===== Искры для темы «гуль» ===== */
+function buildEmbers() {
+  const box = document.querySelector('.bg__embers');
+  if (!box) return;
+  for (let i = 0; i < 16; i++) {
+    const s = document.createElement('i');
+    s.style.setProperty('--x', (Math.random() * 100).toFixed(1) + '%');
+    s.style.setProperty('--d', (6 + Math.random() * 7).toFixed(1) + 's');
+    s.style.setProperty('--w', (-Math.random() * 10).toFixed(1) + 's');
+    s.style.setProperty('--s', (2 + Math.random() * 3).toFixed(1) + 'px');
+    s.style.setProperty('--dx', (Math.random() * 60 - 30).toFixed(0) + 'px');
+    box.appendChild(s);
   }
-  setLite(detectWeak(), false);
-  setTimeout(() => {
-    measureFps(fps => {
-      if (fps < 40 && !loadRaw(KEYS.fx)) setLite(true, false);
-    });
-  }, 800);
 }
 
-/* ================================================================
-   ВКЛАДКИ И СВАЙП
-   ================================================================ */
-function setTab(name, animate) {
-  const next = TABS.indexOf(name);
-  if (next < 0) return;
-  const prev = TABS.indexOf(state.tab);
-  const cls = next > prev ? 'from-right' : 'from-left';
-
-  TABS.forEach(t => {
-    const v = $('view-' + t);
-    v.classList.remove('is-active', 'from-right', 'from-left');
-    if (t === name) {
-      v.classList.add('is-active');
-      if (animate && next !== prev) v.classList.add(cls);
-    }
+/* ===== Вкладки ===== */
+function setTab(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('is-active', v.id === 'view-' + name));
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = t.dataset.tab === name;
+    t.classList.toggle('is-active', on);
+    t.setAttribute('aria-selected', String(on));
   });
-
-  const btns = $('tabbar').querySelectorAll('.tab');
-  btns.forEach(b => b.classList.toggle('is-active', b.dataset.tab === name));
-
   state.tab = name;
   window.scrollTo(0, 0);
 }
 
-function shiftTab(dir) {
-  const i = TABS.indexOf(state.tab) + dir;
-  if (i >= 0 && i < TABS.length) setTab(TABS[i], true);
-}
-
-/* ================================================================
-   ОБРАБОТЧИКИ
-   ================================================================ */
-function bindEvents() {
-  // кнопки времени и «+»
+/* ===== События ===== */
+function bind() {
   $('timeButtons').addEventListener('click', e => {
-    const b = e.target.closest('button');
+    const b = e.target.closest('.chip');
     if (!b) return;
-    if (b.dataset.time) {
-      setTime(b.dataset.time);
-    } else if (b.id === 'addTimeBtn') {
-      const form = $('addTimeForm');
-      form.hidden = !form.hidden;
-      if (!form.hidden) $('customTimeInput').focus();
+    if (b.classList.contains('chip--add')) {
+      const f = $('addTimeForm');
+      f.hidden = !f.hidden;
+      if (!f.hidden) $('customTimeInput').focus();
+    } else if (b.dataset.time) {
+      selectTime(b.dataset.time);
     }
   });
 
@@ -386,131 +319,101 @@ function bindEvents() {
     e.preventDefault();
     const v = $('customTimeInput').value;
     if (!/^\d{2}:\d{2}$/.test(v)) return;
-    if (!allTimes().includes(v)) {
+    if (!TIMES.includes(v) && !state.custom.includes(v)) {
       state.custom.push(v);
-      state.custom.sort((a, b) => parseHM(a) - parseHM(b));
-      saveJSON(KEYS.custom, state.custom);
+      ls.set(K.custom, JSON.stringify(state.custom));
       renderCustom();
     }
-    $('addTimeForm').hidden = true;
     $('customTimeInput').value = '';
-    setTime(v);
+    $('addTimeForm').hidden = true;
+    selectTime(v);
   });
 
   $('customTimeCancel').addEventListener('click', () => {
-    $('addTimeForm').hidden = true;
     $('customTimeInput').value = '';
+    $('addTimeForm').hidden = true;
   });
 
-  // удаление своего времени
   $('customList').addEventListener('click', e => {
-    const b = e.target.closest('button[data-del]');
+    const b = e.target.closest('[data-del]');
     if (!b) return;
-    const t = b.dataset.del;
-    state.custom = state.custom.filter(x => x !== t);
-    saveJSON(KEYS.custom, state.custom);
+    state.custom = state.custom.filter(t => t !== b.dataset.del);
+    ls.set(K.custom, JSON.stringify(state.custom));
     renderCustom();
-    if (state.time === t) setTime(START_TIMES[0]);
-    else renderTimes();
+    if (state.time === b.dataset.del) selectTime(TIMES[0]);
+    else renderChips();
   });
 
-  // счётчики
   $('stepperList').addEventListener('click', e => {
-    const b = e.target.closest('button[data-key]');
+    const b = e.target.closest('button[data-k]');
     if (!b) return;
-    const s = STEPPERS.find(x => x.key === b.dataset.key);
-    const v = state.cfg[s.key] + Number(b.dataset.dir) * s.step;
-    state.cfg[s.key] = Math.min(s.max, Math.max(s.min, v));
-    saveJSON(KEYS.cfg, state.cfg);
-    updateSteppers();
-    rebuild();
+    const k = b.dataset.k, lim = LIM[k];
+    state.cfg[k] = Math.min(lim[1], Math.max(lim[0], state.cfg[k] + (+b.dataset.d) * lim[2]));
+    saveCfg();
   });
 
   $('resetCfg').addEventListener('click', () => {
-    state.cfg = Object.assign({}, DEFAULT_CFG);
-    saveJSON(KEYS.cfg, state.cfg);
-    updateSteppers();
-    rebuild();
+    state.cfg = Object.assign({}, DEF);
+    saveCfg();
   });
 
-  // темы
   $('themes').addEventListener('click', e => {
-    const b = e.target.closest('button[data-id]');
-    if (b) applyTheme(b.dataset.id);
+    const b = e.target.closest('.theme');
+    if (b) applyTheme(b.dataset.id, true);
   });
 
-  // эффекты
   $('fxToggle').addEventListener('click', () => {
-    const isOn = $('fxToggle').getAttribute('aria-checked') === 'true';
-    setLite(isOn, true);   // было включено -> включаем lite
+    const lite = !document.documentElement.classList.contains('lite');
+    state.fxPref = !lite;
+    ls.set(K.fx, lite ? 'off' : 'on');
+    setLite(lite);
   });
 
-  // нижняя панель
   $('tabbar').addEventListener('click', e => {
     const b = e.target.closest('.tab');
-    if (b) setTab(b.dataset.tab, true);
+    if (b) setTab(b.dataset.tab);
   });
 
-  // свайп пальцем
-  let sx = 0, sy = 0, tracking = false;
+  let sx = 0, sy = 0, track = false;
   document.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) { tracking = false; return; }
-    if (e.target.closest('input')) { tracking = false; return; }
-    tracking = true;
-    sx = e.touches[0].clientX;
-    sy = e.touches[0].clientY;
+    if (e.touches.length !== 1) { track = false; return; }
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+    track = !e.target.closest('input,textarea');
   }, { passive: true });
-
   document.addEventListener('touchend', e => {
-    if (!tracking) return;
-    tracking = false;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx;
-    const dy = t.clientY - sy;
-    if (Math.abs(dx) >= SWIPE_MIN_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      shiftTab(dx < 0 ? 1 : -1);
-    }
+    if (!track) return;
+    track = false;
+    const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    setTab(dx < 0 ? 'settings' : 'schedule');
   }, { passive: true });
 
-  // стрелки на ПК
   document.addEventListener('keydown', e => {
-    if (e.target.closest && e.target.closest('input')) return;
-    if (e.key === 'ArrowRight') shiftTab(1);
-    if (e.key === 'ArrowLeft') shiftTab(-1);
+    if (e.target.closest && e.target.closest('input,textarea')) return;
+    if (e.key === 'ArrowRight') setTab('settings');
+    if (e.key === 'ArrowLeft') setTab('schedule');
   });
 
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
 }
 
-/* ================================================================
-   СТАРТ
-   ================================================================ */
+/* ===== Старт ===== */
 function init() {
-  state.cfg = sanitizeCfg(loadJSON(KEYS.cfg, null));
+  buildPlan();
+  renderChips(); renderSteppers(); renderCustom(); renderThemes(); renderSchedule();
+  applyTheme(state.theme, false);
+  buildEmbers();
+  bind();
 
-  const c = loadJSON(KEYS.custom, []);
-  state.custom = Array.isArray(c) ? c.filter(t => typeof t === 'string' && /^\d{2}:\d{2}$/.test(t)) : [];
+  setLite(state.fxPref === null ? !!detectWeak() : !state.fxPref);
+  if (state.fxPref === null) measureFps();
 
-  const savedTime = loadRaw(KEYS.time);
-  state.time = (savedTime && allTimes().includes(savedTime)) ? savedTime : START_TIMES[0];
-
-  renderThemes();
-  applyTheme(loadRaw(KEYS.theme) || 'mono');
-  initFx();
-
-  renderTimes();
-  renderCustom();
-  renderSteppers();
-  bindEvents();
-  rebuild();
-  setTab('schedule', false);
-
-  setInterval(tick, 1000);
+  render();
+  setInterval(render, 1000);
+  setTab('schedule');
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    });
+    window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
   }
 }
 
